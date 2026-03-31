@@ -1,0 +1,22 @@
+{
+  "name": "agent-skills",
+  "version": "0.1.0",
+  "description": "Private skill marketplace for Claude/Pi",
+  "skills": [
+    {
+      "name": "do-plan",
+      "path": "skills/do-plan/SKILL.md",
+      "description": "Planning workflow for complex tasks"
+    },
+    {
+      "name": "do-start",
+      "path": "skills/do-start/SKILL.md",
+      "description": "Task initiation and context setup"
+    },
+    {
+      "name": "close-off",
+      "path": "skills/close-off/SKILL.md",
+      "description": "Session wrap-up and timer management"
+    }
+  ]
+}
