@@ -4,19 +4,20 @@
   "description": "Private skill marketplace for Claude/Pi",
   "skills": [
     {
+      "name": "do-amend",
+      "path": "skills/do-amend/SKILL.md",
+      "description": "Amend work - review and improve existing code/docs"
+    },
+    {
       "name": "do-plan",
       "path": "skills/do-plan/SKILL.md",
-      "description": "Planning workflow for complex tasks"
+      "description": "Planning workflow for complex tasks",
+      "template": "skills/do-plan/template.md"
     },
     {
       "name": "do-start",
       "path": "skills/do-start/SKILL.md",
       "description": "Task initiation and context setup"
-    },
-    {
-      "name": "close-off",
-      "path": "skills/close-off/SKILL.md",
-      "description": "Session wrap-up and timer management"
     }
   ]
 }
