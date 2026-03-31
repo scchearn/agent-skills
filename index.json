@@ -1,23 +1,28 @@
 {
   "name": "agent-skills",
   "version": "0.1.0",
-  "description": "Private skill marketplace for Claude/Pi",
+  "description": "Private skill marketplace for Claude Code, Pi, OpenCode, and other agent workflows",
   "skills": [
     {
       "name": "do-amend",
       "path": "skills/do-amend/SKILL.md",
-      "description": "Amend work - review and improve existing code/docs"
+      "description": "Amend an in-flight plan after requirements or scope change"
     },
     {
       "name": "do-plan",
       "path": "skills/do-plan/SKILL.md",
-      "description": "Planning workflow for complex tasks",
-      "template": "skills/do-plan/template.md"
+      "description": "Create a dependency-ordered implementation plan for the current workspace",
+      "template": "skills/do-plan/references/template.md"
     },
     {
       "name": "do-start",
       "path": "skills/do-start/SKILL.md",
-      "description": "Task initiation and context setup"
+      "description": "Execute the next unblocked task from a plan"
+    },
+    {
+      "name": "do-research",
+      "path": "skills/do-research/SKILL.md",
+      "description": "Research workspace context, APIs, and external evidence before planning or execution"
     }
   ]
 }

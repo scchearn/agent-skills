@@ -1,12 +1,12 @@
 ---
 name: do-plan
-description: Create a structured implementation plan for a feature or task in the Kora monorepo. Use when given a feature description that needs to be broken down into atomic, verifiable, dependency-ordered tasks before execution.
+description: Create a structured implementation plan for a feature or task in the current workspace. Use when given a feature description that needs to be broken down into atomic, verifiable, dependency-ordered tasks before execution.
 argument-hint: <feature description>
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write
 ---
 
-You are a senior engineer on the Kora AMS monorepo. Your job is to decompose a feature description into a rigorous, executable implementation plan — not to write any code yet.
+You are a senior engineer working in the current workspace. Your job is to decompose a feature description into a rigorous, executable implementation plan, not to write any code yet.
 
 ## Input
 
@@ -16,14 +16,15 @@ The feature description is: $ARGUMENTS
 
 ## Step 1 — Load context
 
-Before decomposing anything, read the following to understand the codebase and constraints:
+Before decomposing anything, inspect the workspace to understand its structure, conventions, and constraints. Use search and file reads to discover the right files instead of assuming fixed paths. Read the most relevant material you can find, including:
 
-1. `AGENTS.md` or `CLAUDE.md` at the repo root — monorepo structure, architectural decisions, schema change workflow, and the 6-step change checklist
-2. `apps/docs/docs/specifications/feature-list.md` — per-domain feature specs
-3. `apps/docs/docs/specifications/data-dictionary.md` — field-level entity definitions
-4. Any domain docs in `apps/docs/docs/domains/` that are relevant to the feature description (infer from domain names: identity, people, sessions, medical, wellness, loads, questionnaires, calendar, periodization, matches, availability, communication, integrations, analytics)
-5. Any ERDs in `apps/docs/layers/` for the relevant domains
-6. Existing schema files in `packages/db/src/schema/` for any domain being touched
+1. Root guidance such as `AGENTS.md`, `CLAUDE.md`, `README.md`, `CONTRIBUTING.md`, or similar instructions
+2. Relevant product, domain, or architecture docs under locations like `docs/`, `documentation/`, `specs/`, `adr/`, `design/`, or app/package-local docs
+3. Existing source files, tests, configs, scripts, and examples near the feature area
+4. Schema, model, migration, API contract, or generated-artifact files if persisted data or external contracts are touched
+5. Changelog, release notes, or public API docs if the feature affects externally visible behavior
+
+If the workspace lacks formal docs, infer conventions from adjacent code, tests, config files, and scripts. If key assumptions still cannot be established safely after this research, stop and recommend `/do-research <topic>` instead of inventing them.
 
 Do not skip this step. Plans written without reading the docs will be wrong.
 
@@ -37,45 +38,59 @@ Apply this strategy:
 2. Work **backward** from the deliverables to define tasks
 3. Each task must be:
    - **Atomic** — completable in a single focused session (roughly 1–20 files touched)
-   - **Verifiable** — has a concrete verify command (`pnpm check`, `pnpm build`, a specific test, etc.)
+   - **Verifiable** — has a concrete workspace-native verify command (focused test, typecheck, lint, build, script, etc.)
+   - **Externally checkable** — prefer tasks that add or update automated tests or validations another engineer or CI can run independently, rather than relying only on local manual checking
    - **Dependency-aware** — explicitly lists which task IDs must be `[x]` before it can start
-   - **File-annotated** — populate `Files to read` (relevant docs, ERDs, existing source files to consult) and `Files to modify` (files that will be created or changed) using the knowledge you gained in Step 1. Be specific — use full paths relative to the repo root. This lets `/do-start` go straight to the right files without re-researching.
+   - **File-annotated** — populate `Files to read` (relevant docs, contracts, existing source files, tests, or other references to consult) and `Files to modify` (files that will be created or changed) using the knowledge you gained in Step 1. Be specific and use full paths relative to the workspace root. This lets `/do-start` go straight to the right files without re-researching.
 4. Assign IDs sequentially: T1, T2, T3 ...
-5. Foundational tasks (schema, types, shared utilities) come first. Features built on them come next. Docs/changelog last.
+5. Research tasks that remove critical uncertainty come first. Foundational tasks (data model, shared types/utilities, config) come next. Features built on them come after. Docs, changelog, and release-note work come last.
 
-### Schema change rule
+### Persisted data / schema rule
 
-If the feature touches the database schema, the plan **must** include all 6 steps from the AGENTS.md schema change workflow as separate tasks:
+If the feature changes persisted data, schemas, contracts, or generated artifacts, the plan **must** include every workspace-required step as separate explicit tasks. Determine the exact workflow from workspace guidance and existing patterns before writing the plan.
 
-- T_schema — Update `packages/db/src/schema/<domain>.ts`
-- T_types — Update inferred type exports in `packages/db/src/index.ts`
-- T_erd — Update the ERD in `apps/docs/layers/<domain>.mmd`
-- T_dict — Update `apps/docs/docs/specifications/data-dictionary.md`
-- T_changelog — Add entry to `apps/docs/docs/specifications/changelog.md`
-- T_migrate — Run `pnpm db:generate` from `packages/db/`
+Common examples include:
 
-These must appear in the plan even if they seem minor. They are non-negotiable per the project conventions.
+- updating schema or model definitions
+- creating or updating migrations
+- regenerating clients, types, or other generated artifacts
+- updating docs, data dictionaries, ERDs, or API contracts if the workspace maintains them
+- updating changelog or release notes if required
+- adding or updating tests that cover the new data shape or external behavior
+- running the workspace's generation and validation commands
+
+If the workspace documents a mandatory workflow, treat every required step as non-negotiable even if it seems minor.
 
 ---
 
 ## Step 3 — Write the plan file
 
 1. Slugify the feature description: lowercase, words separated by hyphens, no special characters, max 6 words. Example: "add BetterAuth session handling to api" → `betterauth-session-handling-api`
-2. Read the template at `${CLAUDE_SKILL_DIR}/template.md`
-3. Write the plan to `plans/<slug>.md`, filling in every section:
+2. Read the template at `${CLAUDE_SKILL_DIR}/references/template.md`
+3. Ensure the `plans/` directory exists, then write the plan to `plans/<slug>.md`, filling in every section:
    - **Goal** — one sentence describing the observable end state
-   - **Acceptance criteria** — bullet list of checkable conditions (always include `pnpm check` passes and `pnpm build` exits 0)
-   - **Tasks** — one `### Tx — <title>` block per task with Status, Depends on, Verify, and Notes
+   - **Acceptance criteria** — bullet list of checkable conditions. Always include the primary observable outcome and the relevant workspace-native validation commands. Prefer automated tests or validations that can be re-run independently by another engineer or CI.
+   - **Tasks** — one `### Tx — <title>` block per task with Status, Depends on, Verify, Files to read, Files to modify, and Notes
    - **Decisions log** — add one initial entry: `YYYY-MM-DD — Initial plan created for: <feature description>`
    - **Handoff notes** — leave as `_No handoff yet._`
 
 Use today's date for the decisions log entry.
 
 4. Update `plans/INDEX.md`:
+   - If `plans/` does not exist, create it first
    - Add a new row for this plan under the `pending` section (after any `in-progress` rows, before `done` rows)
    - Format: `| \`pending\` | [<slug>](<slug>.md) | <one-line goal summary> | YYYY-MM-DD HH:MM |`
    - Use today's actual date and current time for the Created column
-   - If `plans/INDEX.md` does not exist, create it with the standard header and table (including a `Created` column header)
+   - If `plans/INDEX.md` does not exist, create it with this header and table:
+
+```md
+# Plans
+
+| Status | Plan | Goal | Created |
+|--------|------|------|---------|
+```
+
+   - Keep the rows ordered as `in-progress`, then `pending`, then `done`
 
 ---
 

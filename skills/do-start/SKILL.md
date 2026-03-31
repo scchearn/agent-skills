@@ -6,15 +6,11 @@ disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
-You are a senior engineer on the Kora AMS monorepo executing a pre-approved implementation plan. Work autonomously. Make decisions, log them, and keep moving. Only stop when a task is genuinely blocked with no resolvable path forward.
-
-## Current plan file contents
-
-!`cat $ARGUMENTS`
+You are a senior engineer executing a pre-approved implementation plan in the current workspace. Work autonomously. Make decisions, log them, and keep moving. Only stop when a task is genuinely blocked with no resolvable path forward.
 
 ---
 
-## Step 0 — Parse arguments
+## Step 0 — Parse arguments and load the plan
 
 `$ARGUMENTS` may contain a plan path and an optional task filter, separated by a space:
 
@@ -26,6 +22,8 @@ You are a senior engineer on the Kora AMS monorepo executing a pre-approved impl
 Parse `$ARGUMENTS`:
 1. Everything up to the first space is the **plan path**
 2. Everything after the first space (if present) is the **task filter**
+
+After parsing, read only the **plan path**. Never attempt to read the task filter as a file.
 
 If a task filter is present, build the **target set** — the explicit list of task IDs to work on this session. Tasks outside the target set will not be executed, even if they are unblocked.
 
@@ -57,7 +55,7 @@ For each relevant `[>]` task, identify all downstream tasks within the target se
 **Step B — Classify each `[>]` task**
 
 - **Blocking**: the `[>]` task is in the dependency chain of the next runnable task in the target set. Cannot proceed without resolving this first.
-- **Non-blocking**: the `[>]` task is not in the dependency chain of the next runnable task (parallel branch, or later). Execution could proceed without it — but it may cause problems later.
+- **Non-blocking**: the `[>]` task is not in the dependency chain of the next runnable task (parallel branch, or later). Execution could proceed without it, but it may cause problems later.
 
 **Step C — Surface and ask**
 
@@ -149,22 +147,25 @@ If this is the **first task being started** in this session (i.e. the plan's `**
 
 **Before writing any code**, check the task for `Files to read` and `Files to modify` hints populated by `/do-plan`. If present:
 
-- Read every file listed under `Files to read` first (docs, ERDs, existing source) — these were identified during planning and contain the context you need.
-- Use `Files to modify` as your starting list of files to edit — add others only if the implementation reveals additional files are needed.
+- Read every file listed under `Files to read` first — these were identified during planning and contain the context you need.
+- Use `Files to modify` as your starting list of files to edit. Add others only if the implementation reveals they are needed.
 
-If these fields are absent or empty, fall back to reading any files you can infer from the task title, dependencies, and AGENTS.md conventions.
+If these fields are absent or empty, fall back to reading any files you can infer from the task title, dependencies, workspace guidance, and adjacent code patterns.
 
-Implement the task. Read the relevant source files before editing them. Follow all conventions in `AGENTS.md`:
+Implement the task. Read the relevant source files before editing them. Follow all applicable workspace guidance you discovered from files like `AGENTS.md`, `CLAUDE.md`, `README.md`, `CONTRIBUTING.md`, lockfiles, manifests, scripts, and adjacent code.
 
-- Package manager: `pnpm` only, never `npm` or `yarn`
-- Database access is server-only — never import `@kora/db` from `apps/app` or `apps/web`
-- Schema changes require all 6 steps from the AGENTS.md schema change workflow
-- Run commands from the correct working directory (monorepo root for `pnpm check`, `packages/db/` for `pnpm db:generate`, etc.)
+- Use the workspace's native package manager and tooling detected from lockfiles, manifests, and scripts.
+- Respect architectural boundaries and module ownership patterns already present in the workspace. Do not introduce new cross-layer coupling unless the plan explicitly requires it.
+- If persisted data, schema, contracts, or generated artifacts change, complete every workspace-required migration, generation, documentation, and test step surfaced during planning.
+- Prefer adding or updating automated tests or validations that can be re-run independently by another engineer or CI, especially for behavior changes.
+- Run commands from the correct working directory for the workspace's tooling.
+- If the task is blocked by unresolved workspace context or ambiguous external behavior that cannot be settled locally, stop and recommend `/do-research <topic>` rather than guessing.
 
 ### 3. Verify
 
-Run the verify command specified on the task. If no verify command is specified, default to `pnpm check`.
+Run the verify command specified on the task. If no verify command is specified, infer the smallest workspace-native automated command that proves the task, preferring a focused test or targeted validation over a broad manual check.
 
+- If the task changes behavior and no automated test exists yet, add one when reasonable before marking the task `[x]`.
 - **Pass** → proceed to step 4
 - **Fail** → read the error, fix it, re-run. Maximum 3 attempts.
 - **Still failing after 3 attempts** → mark the task `[!]`, append to the decisions log explaining what failed and why, write a handoff note, and stop.
@@ -219,7 +220,7 @@ _Last updated: YYYY-MM-DD_
 
 ## Committing
 
-Do not commit during the execution loop. Committing is the user's responsibility or handled separately via the `code-quality-commit` agent. Your job is to write correct, verified code and keep the plan file accurate.
+Do not commit during the execution loop. Committing is handled separately. Your job is to write correct, verified code and keep the plan file accurate.
 
 ---
 
@@ -231,4 +232,5 @@ Do not commit during the execution loop. Committing is the user's responsibility
 - **Never make destructive git operations** (force push, hard reset, rebase) without explicit user instruction.
 - **If the plan is wrong** — missing tasks, wrong dependencies, incorrect scope — add or fix tasks in the plan file and log the change as a decision entry. Do not just work around it silently.
 - **Keep tasks atomic.** If a task is growing beyond ~20 files, split it into subtasks, add them to the plan, and log the split.
+- **Prefer independently re-runnable evidence.** When behavior changes, bias toward tests or validations others can run later instead of relying only on one-off local checks.
 - **Today's date for log entries:** use the actual current date from the system.

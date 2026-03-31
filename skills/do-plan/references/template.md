@@ -6,9 +6,9 @@
 <One sentence: what does "done" look like? What is the observable end state?>
 
 ## Acceptance criteria
-- [ ] ...
-- [ ] `pnpm check` passes with 0 errors
-- [ ] `pnpm build` exits 0
+- [ ] Primary observable outcome works as described
+- [ ] Relevant automated tests or validations covering the changed behavior pass
+- [ ] Relevant workspace-native validation commands pass (for example: test, typecheck, lint, build)
 
 ## Tasks
 <!-- Status key: [ ] pending | [~] in-progress | [x] done | [!] blocked | [>] needs re-run -->
@@ -18,16 +18,16 @@
 ### T1 — <title>
 - **Status:** [ ]
 - **Depends on:** none
-- **Verify:** `pnpm check`
-- **Files to read:** <!-- docs, existing source files, ERDs to consult before starting this task -->
+- **Verify:** `<focused workspace-native automated check>`
+- **Files to read:** <!-- docs, existing source files, tests, contracts, or other references to consult before starting this task -->
 - **Files to modify:** <!-- source files this task will create or change -->
 - **Notes:**
 
 ### T2 — <title>
 - **Status:** [ ]
 - **Depends on:** T1
-- **Verify:** `pnpm check`
-- **Files to read:** <!-- docs, existing source files, ERDs to consult before starting this task -->
+- **Verify:** `<focused workspace-native automated check>`
+- **Files to read:** <!-- docs, existing source files, tests, contracts, or other references to consult before starting this task -->
 - **Files to modify:** <!-- source files this task will create or change -->
 - **Notes:**
 
@@ -40,5 +40,5 @@
 ---
 
 ## Handoff notes
-<!-- Overwritten at the end of each session by /done or /start. -->
+<!-- Overwritten at the end of each execution session by /do-start. -->
 _No handoff yet._

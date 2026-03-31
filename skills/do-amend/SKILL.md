@@ -6,7 +6,7 @@ disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 
-You are a senior engineer on the Kora AMS monorepo. A plan is in flight and something has changed. Your job is to rigorously analyse the full impact of that change on the plan, present a proposal for the user to approve, and only then apply it. Do not modify the file until the user confirms.
+You are a senior engineer working in the current workspace. A plan is in flight and something has changed. Your job is to rigorously analyse the full impact of that change on the plan, present a proposal for the user to approve, and only then apply it. Do not modify the file until the user confirms.
 
 ## Input
 
@@ -21,7 +21,7 @@ The amendment description is in the conversation context immediately above this 
 Read the plan file in full. Build a complete picture:
 
 1. **Goal and acceptance criteria** — what is the plan trying to achieve?
-2. **All tasks** — for every task, note: ID, title, status (`[ ]`/`[~]`/`[x]`/`[!]`/`[>]`), dependencies, verify command, notes
+2. **All tasks** — for every task, note: ID, title, status (`[ ]`/`[~]`/`[x]`/`[!]`/`[>]`), dependencies, verify command, files to read, files to modify, and notes
 3. **Dependency graph** — mentally map which tasks feed into which. A change to T2 may cascade to T4, T5, T7 even if T4 doesn't directly reference T2
 4. **Decisions log** — understand the history and what has already been decided
 5. **Current state** — how far along is execution? What's been done, what's in flight?
@@ -38,7 +38,7 @@ Apply these lenses:
 
 **Direct impact** — does the amendment directly change what this task does or produces?
 
-**Upstream cascade** — if an earlier task is invalidated, does this task depend on that earlier task's output? Transitively? (e.g. T3 schema change → T4 types exports → T7 API route all need re-running even though T7 doesn't mention T3)
+**Upstream cascade** — if an earlier task is invalidated, does this task depend on that earlier task's output? Transitively?
 
 **Scope drift** — does this amendment widen or narrow what a pending task needs to do? The task body may need updating even if it doesn't need re-running.
 
@@ -46,7 +46,11 @@ Apply these lenses:
 
 **Acceptance criteria** — does the amendment affect the plan's goal or acceptance criteria? If so, those need updating too.
 
+**Validation quality** — does the amendment require stronger automated tests or validations so the updated behavior can be checked independently later, not just during this session?
+
 Be critical. Do not under-scope the impact. It is better to flag a task as potentially affected than to miss a cascade.
+
+If the amendment depends on workspace behavior or external APIs you cannot confidently establish from local context, stop and recommend `/do-research <topic>` before applying speculative plan changes.
 
 ---
 
@@ -66,14 +70,14 @@ Format it exactly like this:
 
 **Tasks marked [>] (completed, need re-run):**
   Tx — <title>
-    Why: <specific reason this task's output is now wrong/stale>
+    Why: <specific reason this task's output is now wrong or stale>
     Cascade source: <which upstream change causes this, if indirect>
 
   (or: None — no completed tasks are invalidated)
 
 **Pending tasks with updated scope:**
   Tx — <title>  [currently: [ ] / [~]]
-    Change: <what in this task's notes/scope/verify will be updated>
+    Change: <what in this task's notes, files, verify command, or dependencies will be updated>
 
   (or: None)
 
@@ -120,7 +124,7 @@ Once confirmed, apply changes to the plan file in this exact order:
 
 ### A. Update goal / acceptance criteria (if needed)
 
-Edit the Goal and Acceptance criteria sections if the amendment changes the observable end state.
+Edit the Goal and Acceptance criteria sections if the amendment changes the observable end state. Keep the acceptance criteria checkable, and prefer independently re-runnable tests or validations where appropriate.
 
 ### B. Mark invalidated completed tasks as [>]
 
@@ -130,11 +134,11 @@ For each `[x]` task in the confirmed proposal:
 2. Add a `- **Re-run reason:**` line immediately after Status, one sentence explaining why
 
 ```
-### T3 — Update Drizzle schema
+### T3 — Update persisted contract
 - **Status:** [>]
-- **Re-run reason:** Amendment adds `session_type` enum — schema must be re-run to include the new field.
+- **Re-run reason:** Amendment changes the data contract, so this task's previous output is now stale.
 - **Depends on:** T2
-- **Verify:** `pnpm check`
+- **Verify:** `<workspace-native automated check>`
 - **Notes:** ...
 ```
 
@@ -143,19 +147,23 @@ For each `[x]` task in the confirmed proposal:
 For each `[ ]`/`[~]` task in the confirmed proposal:
 - Update Notes to describe the scope change
 - Update Verify if needed
+- Update `Files to read` and `Files to modify` if the research surface or edit surface changed
 - Update Depends on if dependency order changed
+- If the amendment changes behavior, update the task so it includes automated tests or validations when reasonable
 
 Do NOT change the task ID. If the change makes the task fundamentally different, supersede it: mark the old one `[!]` with a note, and add a new task.
 
 ### D. Add new tasks
 
-Append new tasks after the last existing task, continuing the ID sequence (last is T8 → add T9, T10, …):
+Append new tasks after the last existing task, continuing the ID sequence (last is T8 → add T9, T10, ...):
 
 ```
 ### Tx — <title>
 - **Status:** [ ]
 - **Depends on:** <task IDs or "none">
-- **Verify:** `<command>`
+- **Verify:** `<workspace-native automated check>`
+- **Files to read:** <!-- docs, existing source files, contracts, tests, or external references to consult -->
+- **Files to modify:** <!-- source files, tests, docs, or generated artifacts this task will change -->
 - **Notes:** Added by amendment YYYY-MM-DD: <reason>
 ```
 
@@ -207,3 +215,4 @@ Note: /do-start will detect the [>] tasks and prompt you on how to handle them.
 - **Preserve all task IDs.** Never renumber existing tasks.
 - **Do not execute any implementation work.** Your job is plan surgery only.
 - **Cascade aggressively, apply conservatively.** Flag every possibly-affected task in the proposal. Mark `[>]` only what the user confirms truly needs re-running.
+- **Prefer independently re-runnable validation.** When the amendment changes behavior, bias toward updating or adding tests that others can run later.
