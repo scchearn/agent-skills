@@ -58,25 +58,32 @@ Output exactly:
 ## Research summary: <topic>
 
 ### Question
+
 <what was investigated>
 
 ### What exists today
+
 - ...
 
 ### Relevant evidence
+
 - `path/to/file` — <why it matters>
 - <external source> — <why it matters>
 
 ### Constraints and conventions
+
 - ...
 
 ### Recommended next step
+
 - <specific recommendation>
 
 ### Suggested command
+
 - `/do-plan <feature description>` or `/do-start plans/<slug>.md` or `/do-amend plans/<slug>.md` or <ask user a specific question>
 
 ### Open questions
+
 - ...
 ```
 

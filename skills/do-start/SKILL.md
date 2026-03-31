@@ -20,6 +20,7 @@ You are a senior engineer executing a pre-approved implementation plan in the cu
 - `plans/foo.md T3-T7` — run T3 through T7 inclusive (by numeric sequence)
 
 Parse `$ARGUMENTS`:
+
 1. Everything up to the first space is the **plan path**
 2. Everything after the first space (if present) is the **task filter**
 
@@ -96,6 +97,7 @@ Wait for the user's choice before proceeding. Then:
 ## Pre-flight: dependency check for targeted runs
 
 If a task filter was provided, verify that every task in the target set either:
+
 - Has all dependencies already `[x]`, OR
 - Has dependencies that are also in the target set and will be run first this session
 
@@ -205,12 +207,13 @@ When writing the Handoff notes section, **overwrite** the previous content (do n
 
 ```md
 ## Handoff notes
+
 _Last updated: YYYY-MM-DD_
 
 **Completed this session:** T1 (title), T2 (title), ...
-**Re-runs completed:** Tx (title), ...  ← omit line if none
-**Deferred re-runs:** Tx (title), ...   ← omit line if none
-**Targeted run:** T3-T7 only           ← omit line if full plan run
+**Re-runs completed:** Tx (title), ... ← omit line if none
+**Deferred re-runs:** Tx (title), ... ← omit line if none
+**Targeted run:** T3-T7 only ← omit line if full plan run
 **Next task:** Tx — <title>
 **Open questions / blockers:** <any issues, or "none">
 **Completion:** X of Y tasks done (Z%) — [>] tasks count as pending

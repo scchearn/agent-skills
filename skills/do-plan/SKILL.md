@@ -68,6 +68,7 @@ If the workspace documents a mandatory workflow, treat every required step as no
 1. Slugify the feature description: lowercase, words separated by hyphens, no special characters, max 6 words. Example: "add BetterAuth session handling to api" → `betterauth-session-handling-api`
 2. Read the template at `${CLAUDE_SKILL_DIR}/references/template.md`
 3. Ensure the `plans/` directory exists, then write the plan to `plans/<slug>.md`, filling in every section:
+   - **Status** — include a top-level `**Status:** \`pending\``field for new plans created by`/do-plan`
    - **Goal** — one sentence describing the observable end state
    - **Acceptance criteria** — bullet list of checkable conditions. Always include the primary observable outcome and the relevant workspace-native validation commands. Prefer automated tests or validations that can be re-run independently by another engineer or CI.
    - **Tasks** — one `### Tx — <title>` block per task with Status, Depends on, Verify, Files to read, Files to modify, and Notes
@@ -76,7 +77,7 @@ If the workspace documents a mandatory workflow, treat every required step as no
 
 Use today's date for the decisions log entry.
 
-4. Update `plans/INDEX.md`:
+1. Update `plans/INDEX.md`:
    - If `plans/` does not exist, create it first
    - Add a new row for this plan under the `pending` section (after any `in-progress` rows, before `done` rows)
    - Format: `| \`pending\` | [<slug>](<slug>.md) | <one-line goal summary> | YYYY-MM-DD HH:MM |`
@@ -84,13 +85,19 @@ Use today's date for the decisions log entry.
    - If `plans/INDEX.md` does not exist, create it with this header and table:
 
 ```md
-# Plans
+# Plans Index
+
+<!-- Status key: pending | in-progress | done | abandoned -->
+<!-- Ordered by: in-progress → pending → done -->
+<!-- Updated automatically by /do-plan, /do-start, /do-amend -->
 
 | Status | Plan | Goal | Created |
-|--------|------|------|---------|
+| ------ | ---- | ---- | ------- |
 ```
 
-   - Keep the rows ordered as `in-progress`, then `pending`, then `done`
+    - Keep the rows ordered as `in-progress`, then `pending`, then `done`
+
+`/do-plan` must create the top-level status field and `plans/INDEX.md`. `/do-start` and `/do-amend` rely on both being present.
 
 ---
 

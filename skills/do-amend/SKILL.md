@@ -1,7 +1,7 @@
 ---
 name: do-amend
 description: Amend an existing plan file — add tasks, modify pending tasks, and mark completed tasks that are invalidated by the change as [>] (needs re-run). Walks through analysis, cascading impact, and user confirmation before touching the file. Use when requirements or scope have changed mid-execution.
-argument-hint: plans/<slug>.md  # describe what to amend in your message, then invoke this skill
+argument-hint: plans/<slug>.md # describe what to amend in your message, then invoke this skill
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Glob, Grep
 ---
@@ -32,7 +32,7 @@ Do not modify anything yet.
 
 ## Phase 2 — Critique the amendment
 
-Now reason carefully about the amendment. Work through **every single task** in the plan and ask: *does this amendment affect this task's inputs, outputs, scope, or correctness?*
+Now reason carefully about the amendment. Work through **every single task** in the plan and ask: _does this amendment affect this task's inputs, outputs, scope, or correctness?_
 
 Apply these lenses:
 
@@ -145,6 +145,7 @@ For each `[x]` task in the confirmed proposal:
 ### C. Edit pending tasks with updated scope
 
 For each `[ ]`/`[~]` task in the confirmed proposal:
+
 - Update Notes to describe the scope change
 - Update Verify if needed
 - Update `Files to read` and `Files to modify` if the research surface or edit surface changed
@@ -184,7 +185,7 @@ YYYY-MM-DD — Plan amended: <summary of change>. Re-run required: <[>] task IDs
 After all edits, re-evaluate the plan's overall status:
 
 - If any task is now `[>]` or `[ ]` and the plan's `**Status:**` field is `` `done` `` → update it to `` `in-progress` `` and update the row in `plans/INDEX.md` to match
-- If all tasks are `[x]` → leave status as `` `done` `` (or set it if it was wrong)
+- If all tasks are `[x]` → leave status as `` `done` `` (or set it if it was wrong) and update the row in `plans/INDEX.md` to match
 - Otherwise → no change needed
 
 This ensures a previously-completed plan that gets amended doesn't falsely show as `done` in the index.
