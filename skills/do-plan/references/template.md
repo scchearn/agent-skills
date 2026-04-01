@@ -25,6 +25,12 @@ completed_at: null
 - **Started:** `not started`
 - **Completed:** `not completed`
 
+## Related research
+
+<!-- Link only the research memos actually used while planning. -->
+
+_None linked._
+
 ## Goal
 
 <One sentence: what does "done" look like? What is the observable end state?>
@@ -46,7 +52,7 @@ completed_at: null
 - **Status:** [ ]
 - **Depends on:** none
 - **Verify:** `<focused workspace-native automated check>`
-- **Files to read:** <!-- docs, existing source files, tests, contracts, or other references to consult before starting this task -->
+- **Files to read:** <!-- research memos, docs, existing source files, tests, contracts, or other references to consult before starting this task -->
 - **Files to modify:** <!-- source files this task will create or change -->
 - **Notes:**
 
@@ -55,7 +61,7 @@ completed_at: null
 - **Status:** [ ]
 - **Depends on:** T1
 - **Verify:** `<focused workspace-native automated check>`
-- **Files to read:** <!-- docs, existing source files, tests, contracts, or other references to consult before starting this task -->
+- **Files to read:** <!-- research memos, docs, existing source files, tests, contracts, or other references to consult before starting this task -->
 - **Files to modify:** <!-- source files this task will create or change -->
 - **Notes:**
 

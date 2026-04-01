@@ -1,6 +1,6 @@
 ---
 name: do-plan
-description: Create a structured implementation plan for a feature or task in the current workspace. Use when given a feature description that needs to be broken down into atomic, verifiable, dependency-ordered tasks before execution.
+description: Create a structured implementation plan for a feature or task in the current workspace. Use current repo context and any relevant persisted research to build atomic, verifiable, dependency-ordered tasks before execution.
 argument-hint: <feature description>
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write
@@ -16,7 +16,22 @@ The feature description is: $ARGUMENTS
 
 ## Step 1 — Load context
 
-Before decomposing anything, inspect the workspace to understand its structure, conventions, and constraints. Use search and file reads to discover the right files instead of assuming fixed paths. Read the most relevant material you can find, including:
+Before decomposing anything, inspect the workspace to understand its structure, conventions, and constraints. Start by checking for relevant persisted research under `plans/research/`, then read the current workspace state. Use search and file reads to discover the right files instead of assuming fixed paths.
+
+### Existing research
+
+If `plans/research/` exists:
+
+1. List `plans/research/*.md`
+2. Derive 3-8 search terms from the feature description
+3. Read only the front matter of each memo for discovery. Do not read every research file in full, and do not rely on or create any separate research index.
+4. Shortlist likely research memos using filename similarity and front matter fields like `name`, `description`, and `keywords`
+5. Read only the opening section of the 1-3 best candidates first (front matter + top of file)
+6. Read the full memo only if it is directly relevant to the feature you are planning
+7. Treat research memos as accelerators, not source of truth. If a memo conflicts with the current repo state, trust the current repo state and note the mismatch in the plan's decisions log
+8. If you use a memo, add its path to `## Related research` in the plan and include it in relevant task `Files to read`
+
+After that, read the most relevant current workspace material you can find, including:
 
 1. Root guidance such as `AGENTS.md`, `CLAUDE.md`, `README.md`, `CONTRIBUTING.md`, or similar instructions
 2. Relevant product, domain, or architecture docs under locations like `docs/`, `documentation/`, `specs/`, `adr/`, `design/`, or app/package-local docs
@@ -41,7 +56,7 @@ Apply this strategy:
    - **Verifiable** — has a concrete workspace-native verify command (focused test, typecheck, lint, build, script, etc.)
    - **Externally checkable** — prefer tasks that add or update automated tests or validations another engineer or CI can run independently, rather than relying only on local manual checking
    - **Dependency-aware** — explicitly lists which task IDs must be `[x]` before it can start
-   - **File-annotated** — populate `Files to read` (relevant docs, contracts, existing source files, tests, or other references to consult) and `Files to modify` (files that will be created or changed) using the knowledge you gained in Step 1. Be specific and use full paths relative to the workspace root. This lets `/do-start` go straight to the right files without re-researching.
+   - **File-annotated** — populate `Files to read` (relevant research memos, docs, contracts, existing source files, tests, or other references to consult) and `Files to modify` (files that will be created or changed) using the knowledge you gained in Step 1. Be specific and use full paths relative to the workspace root. This lets `/do-start` go straight to the right files without re-researching.
 4. Assign IDs sequentially: T1, T2, T3 ...
 5. Research tasks that remove critical uncertainty come first. Foundational tasks (data model, shared types/utilities, config) come next. Features built on them come after. Docs, changelog, and release-note work come last.
 
@@ -94,6 +109,7 @@ If the workspace documents a mandatory workflow, treat every required step as no
 
    Fill in the rest of the plan as follows:
 
+   - **Related research** — bullet list of the research memo paths you actually used while planning, with a short reason for each. If none were used, write `_None linked._`
    - **Goal** — one sentence describing the observable end state
    - **Acceptance criteria** — bullet list of checkable conditions. Always include the primary observable outcome and the relevant workspace-native validation commands. Prefer automated tests or validations that can be re-run independently by another engineer or CI.
    - **Tasks** — one `### Tx — <title>` block per task with Status, Depends on, Verify, Files to read, Files to modify, and Notes
@@ -104,25 +120,28 @@ Use today's actual local date and time for the front matter timestamps and use t
 
 4. Update `plans/INDEX.md`:
    - If `plans/` does not exist, create it first
-   - Add a new row for this plan under the `pending` section (after any `in-progress` rows, before `done` rows)
-   - Format: `| \`pending\` | [<slug>](<slug>.md) | <one-line goal summary> | YYYY-MM-DD HH:MM |`
-   - Use today's actual date and current time for the Created column
+   - Add a new row for this plan under the `pending` section (after any `in-progress` rows, before `done` and `abandoned` rows)
+   - The row must mirror the plan's front matter using this format: `| \`pending\` | <title> | [<slug>](<slug>.md) | <description> | <task_count> | YYYY-MM-DD HH:MM | YYYY-MM-DD HH:MM | - | - |`
+   - Use `-` in the `Started` and `Completed` columns when `started_at` or `completed_at` are `null`
+   - Use today's actual date and current time for the `Created` and `Updated` columns on a new plan
    - If `plans/INDEX.md` does not exist, create it with this header and table:
 
 ```md
 # Plans Index
 
 <!-- Status key: pending | in-progress | done | abandoned -->
-<!-- Ordered by: in-progress → pending → done -->
+<!-- Ordered by: in-progress → pending → done → abandoned -->
 <!-- Updated automatically by /do-plan, /do-start, /do-amend -->
+<!-- Each row mirrors plan front matter: status, title, slug link, description, task_count, created_at, updated_at, started_at, completed_at -->
+<!-- Use `-` for null started_at/completed_at values. -->
 
-| Status | Plan | Goal | Created |
-| ------ | ---- | ---- | ------- |
+| Status | Title | Plan | Description | Tasks | Created | Updated | Started | Completed |
+| ------ | ----- | ---- | ----------- | ----- | ------- | ------- | ------- | --------- |
 ```
 
-    - Keep the rows ordered as `in-progress`, then `pending`, then `done`
+    - Keep the rows ordered as `in-progress`, then `pending`, then `done`, then `abandoned`
 
-`/do-plan` must create the YAML front matter, the mirrored `## Plan summary` section, and `plans/INDEX.md`. `/do-start` and `/do-amend` rely on all three being present.
+`/do-plan` must create the YAML front matter, the mirrored `## Plan summary` section, the `## Related research` section, and `plans/INDEX.md`. `/do-start` and `/do-amend` rely on the plan structure being present and accurate.
 
 ---
 
@@ -132,6 +151,9 @@ After writing the file, output:
 
 ```
 Plan written to plans/<slug>.md
+
+Related research:
+  - <path or "none">
 
 Goal: <goal sentence>
 

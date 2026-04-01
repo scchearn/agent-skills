@@ -1,7 +1,7 @@
 {
   "name": "agent-skills",
   "version": "0.1.0",
-  "description": "Private skill marketplace for Claude Code, Pi, OpenCode, and other agent workflows",
+  "description": "Planning skill framework for agent coding harnesses compatible with Anthropic's skill layout",
   "skills": [
     {
       "name": "do-amend",
@@ -11,7 +11,7 @@
     {
       "name": "do-plan",
       "path": "skills/do-plan/SKILL.md",
-      "description": "Create a dependency-ordered implementation plan for the current workspace",
+      "description": "Create a dependency-ordered implementation plan using current repo context and relevant research",
       "template": "skills/do-plan/references/template.md"
     },
     {
@@ -22,7 +22,7 @@
     {
       "name": "do-research",
       "path": "skills/do-research/SKILL.md",
-      "description": "Research workspace context, APIs, and external evidence before planning or execution"
+      "description": "Research workspace context, APIs, and external evidence, then persist a reusable memo for planning"
     }
   ]
 }

@@ -1,12 +1,12 @@
 ---
 name: do-research
-description: Research workspace context, APIs, implementation options, or external evidence before planning or execution. Produce an evidence-backed memo without changing code.
+description: Research workspace context, APIs, implementation options, or external evidence before planning or execution. Persist an evidence-backed memo the rest of the workflow can reuse.
 argument-hint: <topic or question>
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Bash, WebFetch
+allowed-tools: Read, Glob, Grep, Bash, WebFetch, Write
 ---
 
-You are a senior engineer researching a question in the current workspace. Your job is to gather evidence, reduce uncertainty, and recommend the next action. Do not modify code.
+You are a senior engineer researching a question in the current workspace. Your job is to gather evidence, reduce uncertainty, and persist a reusable research memo under `plans/research/`. Do not modify source code or implementation files.
 
 ## Input
 
@@ -48,11 +48,24 @@ Map the affected files, commands, architectural boundaries, and validation optio
 
 If multiple approaches are viable, compare the smallest correct options and call out tradeoffs. Prefer approaches that can later be validated with automated tests or repeatable commands.
 
+If the question remains too ambiguous or under-specified after this research, ask only the smallest follow-up question needed and stop. Do not write a speculative memo.
+
 ---
 
-## Step 4 — Report
+## Step 4 — Write the research memo
 
-Output exactly:
+1. Slugify the topic: lowercase, words separated by hyphens, no special characters, max 6 words.
+2. Ensure `plans/research/` exists, then write the memo to `plans/research/<slug>.md`.
+3. The file must begin with YAML front matter. Populate:
+
+   - `name` — same as the slug / filename stem
+   - `description` — short summary, max 70 tokens
+   - `keywords` — 3-8 concise lowercase keywords or short phrases for later lookup by `/do-plan`
+   - `created_at` — actual local date and time when the memo was first written, format `YYYY-MM-DD HH:MM`
+   - `updated_at` — actual local date and time of this write, same format
+
+4. If `plans/research/<slug>.md` already exists and clearly covers the same question, update it in place and preserve its original `created_at` while refreshing `updated_at`. If it exists but covers a different question, choose a more specific slug instead of overwriting unrelated research.
+5. Write the markdown body using exactly this structure:
 
 ```md
 ## Research summary: <topic>
@@ -87,13 +100,36 @@ Output exactly:
 - ...
 ```
 
-If the question remains too ambiguous or under-specified, ask only the smallest follow-up question needed.
+The memo should be useful on its own to someone opening the file later. Be concrete. Cite paths and sources.
+
+---
+
+## Step 5 — Report back
+
+After writing the file, output exactly:
+
+```md
+Research written to plans/research/<slug>.md
+
+### Summary
+
+- <most important finding>
+- <most important constraint or unknown>
+
+### Suggested next step
+
+- <specific recommendation>
+
+### Suggested command
+
+- <command>
+```
 
 ---
 
 ## Rules
 
-- Do not modify files or implement code.
+- Do not modify source code or implementation files. Writing under `plans/research/` is required.
 - Cite file paths, commands, and external sources.
 - Make uncertainty explicit. Do not guess.
 - Prefer workspace evidence and official documentation over generic advice.
