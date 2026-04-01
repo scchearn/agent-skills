@@ -152,9 +152,9 @@ If this is the **first task being started** in this session (i.e. the front matt
 - Set front matter `started_at` to that same timestamp if it is currently `null`
 - Keep front matter `task_count` equal to the number of `### T...` task blocks currently in the plan
 - Sync `## Plan summary` so `Status`, `Task count`, `Last updated`, and `Started` match the front matter
-- Update the corresponding row in `plans/INDEX.md` from `pending` to `in-progress`
+- Sync the corresponding row in `plans/INDEX.md` so `Status`, `Title`, `Plan`, `Description`, `Tasks`, `Created`, `Updated`, `Started`, and `Completed` mirror the front matter, and move the row if the status ordering changed
 
-Even when the plan was already `in-progress`, refresh `updated_at` and `Last updated` whenever you edit the plan. If you add tasks while splitting or correcting the plan, update `task_count` in both the front matter and `## Plan summary`.
+Even when the plan was already `in-progress`, refresh `updated_at` and `Last updated` whenever you edit the plan. Keep the row in `plans/INDEX.md` synchronized whenever any mirrored metadata changes. If you add tasks while splitting or correcting the plan, update `task_count` in the front matter, `## Plan summary`, and the `Tasks` column in the index.
 
 ### 2. Do the work
 
@@ -187,7 +187,7 @@ Run the verify command specified on the task. If no verify command is specified,
 
 Edit the plan file: change `[~]` to `[x]`.
 
-Refresh front matter `updated_at` and `## Plan summary` `Last updated` after marking the task complete.
+Refresh front matter `updated_at`, `## Plan summary` `Last updated`, and the matching `Updated` value in `plans/INDEX.md` after marking the task complete.
 
 If this was the **last remaining task** (all tasks in the plan are now `[x]`), also:
 
@@ -195,7 +195,7 @@ If this was the **last remaining task** (all tasks in the plan are now `[x]`), a
 - Set front matter `completed_at` to the current local date and time, format `YYYY-MM-DD HH:MM`
 - Keep front matter `task_count` equal to the number of task blocks in the plan
 - Sync `## Plan summary` so `Status`, `Task count`, `Last updated`, and `Completed` match the front matter
-- Update the row in `plans/INDEX.md` from `in-progress` to `done`
+- Sync the row in `plans/INDEX.md` so every mirrored metadata column reflects the completed plan
 
 ### 5. Log decisions
 
@@ -238,7 +238,7 @@ _Last updated: YYYY-MM-DD_
 **Completion:** X of Y tasks done (Z%) — [>] tasks count as pending
 ```
 
-Whenever you overwrite `## Handoff notes`, also refresh front matter `updated_at` and `## Plan summary` `Last updated` to the current local timestamp.
+Whenever you overwrite `## Handoff notes`, also refresh front matter `updated_at`, `## Plan summary` `Last updated`, and the plan's `Updated` value in `plans/INDEX.md` to the current local timestamp.
 
 ---
 
@@ -255,7 +255,7 @@ Do not commit during the execution loop. Committing is handled separately. Your 
 - **Never execute tasks outside the target set** — if a filter was given, respect it.
 - **Never make destructive git operations** (force push, hard reset, rebase) without explicit user instruction.
 - **If the plan is wrong** — missing tasks, wrong dependencies, incorrect scope — add or fix tasks in the plan file and log the change as a decision entry. Do not just work around it silently.
-- **Keep YAML front matter and `## Plan summary` synchronized** on every plan edit. If task count changes, update `task_count` and `Task count` too.
+- **Keep YAML front matter, `## Plan summary`, and `plans/INDEX.md` synchronized** on every plan edit. If task count changes, update `task_count`, `Task count`, and the index `Tasks` column too. Use `-` in the index for null `started_at` or `completed_at` values.
 - **Keep tasks atomic.** If a task is growing beyond ~20 files, split it into subtasks, add them to the plan, and log the split.
 - **Prefer independently re-runnable evidence.** When behavior changes, bias toward tests or validations others can run later instead of relying only on one-off local checks.
 - **Today's date for log entries:** use the actual current date from the system.
