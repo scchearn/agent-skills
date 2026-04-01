@@ -30,6 +30,8 @@ If a task filter is present, build the **target set** — the explicit list of t
 
 If no task filter is present, the target set is **all tasks** (normal behaviour).
 
+Read the plan file in full, including the YAML front matter and `## Plan summary`. Treat those metadata sections as authoritative plan metadata and keep them synchronized with each other whenever you edit the plan.
+
 **Dependency rule for targeted runs:** if a targeted task has a dependency that is `[ ]`, `[~]`, or `[>]` (i.e. not yet `[x]`), that is a problem. See the pre-flight below — surface it to the user rather than skipping silently.
 
 ---
@@ -143,7 +145,16 @@ Edit the plan file: change the task's status to `[~]`.
 - `[ ]` → `[~]`
 - `[>]` → `[~]` (re-running — also remove the `Re-run reason:` line once you start, so it doesn't linger after completion)
 
-If this is the **first task being started** in this session (i.e. the plan's `**Status:**` field is still `` `pending` ``), update it to `` `in-progress` `` and update the corresponding row in `plans/INDEX.md` from `` `pending` `` to `` `in-progress` ``.
+If this is the **first task being started** in this session (i.e. the front matter `status` is still `pending`), update the metadata before doing any code work:
+
+- Set front matter `status` to `in-progress`
+- Set front matter `updated_at` to the current local date and time, format `YYYY-MM-DD HH:MM`
+- Set front matter `started_at` to that same timestamp if it is currently `null`
+- Keep front matter `task_count` equal to the number of `### T...` task blocks currently in the plan
+- Sync `## Plan summary` so `Status`, `Task count`, `Last updated`, and `Started` match the front matter
+- Update the corresponding row in `plans/INDEX.md` from `pending` to `in-progress`
+
+Even when the plan was already `in-progress`, refresh `updated_at` and `Last updated` whenever you edit the plan. If you add tasks while splitting or correcting the plan, update `task_count` in both the front matter and `## Plan summary`.
 
 ### 2. Do the work
 
@@ -176,7 +187,15 @@ Run the verify command specified on the task. If no verify command is specified,
 
 Edit the plan file: change `[~]` to `[x]`.
 
-If this was the **last remaining task** (all tasks in the plan are now `[x]`), also update the plan's `**Status:**` field to `` `done` `` and update the row in `plans/INDEX.md` from `` `in-progress` `` to `` `done` ``.
+Refresh front matter `updated_at` and `## Plan summary` `Last updated` after marking the task complete.
+
+If this was the **last remaining task** (all tasks in the plan are now `[x]`), also:
+
+- Update front matter `status` to `done`
+- Set front matter `completed_at` to the current local date and time, format `YYYY-MM-DD HH:MM`
+- Keep front matter `task_count` equal to the number of task blocks in the plan
+- Sync `## Plan summary` so `Status`, `Task count`, `Last updated`, and `Completed` match the front matter
+- Update the row in `plans/INDEX.md` from `in-progress` to `done`
 
 ### 5. Log decisions
 
@@ -219,6 +238,8 @@ _Last updated: YYYY-MM-DD_
 **Completion:** X of Y tasks done (Z%) — [>] tasks count as pending
 ```
 
+Whenever you overwrite `## Handoff notes`, also refresh front matter `updated_at` and `## Plan summary` `Last updated` to the current local timestamp.
+
 ---
 
 ## Committing
@@ -234,6 +255,7 @@ Do not commit during the execution loop. Committing is handled separately. Your 
 - **Never execute tasks outside the target set** — if a filter was given, respect it.
 - **Never make destructive git operations** (force push, hard reset, rebase) without explicit user instruction.
 - **If the plan is wrong** — missing tasks, wrong dependencies, incorrect scope — add or fix tasks in the plan file and log the change as a decision entry. Do not just work around it silently.
+- **Keep YAML front matter and `## Plan summary` synchronized** on every plan edit. If task count changes, update `task_count` and `Task count` too.
 - **Keep tasks atomic.** If a task is growing beyond ~20 files, split it into subtasks, add them to the plan, and log the split.
 - **Prefer independently re-runnable evidence.** When behavior changes, bias toward tests or validations others can run later instead of relying only on one-off local checks.
 - **Today's date for log entries:** use the actual current date from the system.

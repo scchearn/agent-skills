@@ -67,17 +67,42 @@ If the workspace documents a mandatory workflow, treat every required step as no
 
 1. Slugify the feature description: lowercase, words separated by hyphens, no special characters, max 6 words. Example: "add BetterAuth session handling to api" → `betterauth-session-handling-api`
 2. Read the template at `${CLAUDE_SKILL_DIR}/references/template.md`
-3. Ensure the `plans/` directory exists, then write the plan to `plans/<slug>.md`, filling in every section:
-   - **Status** — include a top-level `**Status:** \`pending\``field for new plans created by`/do-plan`
+3. Ensure the `plans/` directory exists, then write the plan to `plans/<slug>.md`, filling in every section.
+
+   The plan file must begin with YAML front matter. Populate and keep these fields accurate from the start:
+
+   - `title` — same value as the H1 heading
+   - `slug` — the plan slug / filename stem
+   - `description` — a short summary of the plan, max 70 tokens
+   - `status` — `pending` for all new plans created by `/do-plan`
+   - `task_count` — the total number of task blocks in the plan
+   - `created_at` — the actual local date and time when the plan was generated, format `YYYY-MM-DD HH:MM`
+   - `updated_at` — same value as `created_at` for a new plan, same format
+   - `started_at` — `null` for a new plan
+   - `completed_at` — `null` for a new plan
+
+   The markdown body must mirror that metadata in `## Plan summary`. Keep the summary values aligned with the front matter:
+
+   - `Description` mirrors `description`
+   - `Status` mirrors `status`
+   - `Slug` mirrors `slug`
+   - `Task count` mirrors `task_count`
+   - `Created` mirrors `created_at`
+   - `Last updated` mirrors `updated_at`
+   - `Started` mirrors `started_at` (`not started` when null)
+   - `Completed` mirrors `completed_at` (`not completed` when null)
+
+   Fill in the rest of the plan as follows:
+
    - **Goal** — one sentence describing the observable end state
    - **Acceptance criteria** — bullet list of checkable conditions. Always include the primary observable outcome and the relevant workspace-native validation commands. Prefer automated tests or validations that can be re-run independently by another engineer or CI.
    - **Tasks** — one `### Tx — <title>` block per task with Status, Depends on, Verify, Files to read, Files to modify, and Notes
    - **Decisions log** — add one initial entry: `YYYY-MM-DD — Initial plan created for: <feature description>`
    - **Handoff notes** — leave as `_No handoff yet._`
 
-Use today's date for the decisions log entry.
+Use today's actual local date and time for the front matter timestamps and use today's date for the decisions log entry.
 
-1. Update `plans/INDEX.md`:
+4. Update `plans/INDEX.md`:
    - If `plans/` does not exist, create it first
    - Add a new row for this plan under the `pending` section (after any `in-progress` rows, before `done` rows)
    - Format: `| \`pending\` | [<slug>](<slug>.md) | <one-line goal summary> | YYYY-MM-DD HH:MM |`
@@ -97,7 +122,7 @@ Use today's date for the decisions log entry.
 
     - Keep the rows ordered as `in-progress`, then `pending`, then `done`
 
-`/do-plan` must create the top-level status field and `plans/INDEX.md`. `/do-start` and `/do-amend` rely on both being present.
+`/do-plan` must create the YAML front matter, the mirrored `## Plan summary` section, and `plans/INDEX.md`. `/do-start` and `/do-amend` rely on all three being present.
 
 ---
 

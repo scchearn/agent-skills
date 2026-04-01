@@ -21,10 +21,11 @@ The amendment description is in the conversation context immediately above this 
 Read the plan file in full. Build a complete picture:
 
 1. **Goal and acceptance criteria** — what is the plan trying to achieve?
-2. **All tasks** — for every task, note: ID, title, status (`[ ]`/`[~]`/`[x]`/`[!]`/`[>]`), dependencies, verify command, files to read, files to modify, and notes
-3. **Dependency graph** — mentally map which tasks feed into which. A change to T2 may cascade to T4, T5, T7 even if T4 doesn't directly reference T2
-4. **Decisions log** — understand the history and what has already been decided
-5. **Current state** — how far along is execution? What's been done, what's in flight?
+2. **Front matter and plan summary** — note the current `title`, `slug`, `description`, `status`, `task_count`, timestamps, and whether `## Plan summary` matches the YAML front matter
+3. **All tasks** — for every task, note: ID, title, status (`[ ]`/`[~]`/`[x]`/`[!]`/`[>]`), dependencies, verify command, files to read, files to modify, and notes
+4. **Dependency graph** — mentally map which tasks feed into which. A change to T2 may cascade to T4, T5, T7 even if T4 doesn't directly reference T2
+5. **Decisions log** — understand the history and what has already been decided
+6. **Current state** — how far along is execution? What's been done, what's in flight?
 
 Do not modify anything yet.
 
@@ -45,6 +46,8 @@ Apply these lenses:
 **New gaps** — does the amendment introduce requirements that no existing task covers? What new tasks are needed?
 
 **Acceptance criteria** — does the amendment affect the plan's goal or acceptance criteria? If so, those need updating too.
+
+**Plan metadata** — does the amendment change the short description, task count, or overall status that the YAML front matter and `## Plan summary` should reflect?
 
 **Validation quality** — does the amendment require stronger automated tests or validations so the updated behavior can be checked independently later, not just during this session?
 
@@ -92,6 +95,9 @@ Format it exactly like this:
 **Goal / acceptance criteria changes:**
   <describe any updates needed, or "None">
 
+**Front matter / plan summary changes:**
+  <describe any description, task count, or status-related metadata updates needed, or "None">
+
 **Unaffected tasks:** Tx, Ty, Tz ...
   Reason: <brief justification that these are genuinely unaffected>
 
@@ -122,9 +128,11 @@ If the user asks for changes to the proposal, revise it and ask again. Repeat un
 
 Once confirmed, apply changes to the plan file in this exact order:
 
-### A. Update goal / acceptance criteria (if needed)
+### A. Update goal / acceptance criteria / summary metadata (if needed)
 
 Edit the Goal and Acceptance criteria sections if the amendment changes the observable end state. Keep the acceptance criteria checkable, and prefer independently re-runnable tests or validations where appropriate.
+
+If the observable scope changes materially, also update front matter `description` and `## Plan summary` `Description`. The description must stay within 70 tokens.
 
 ### B. Mark invalidated completed tasks as [>]
 
@@ -180,13 +188,19 @@ The log is **append-only**. Add exactly one entry:
 YYYY-MM-DD — Plan amended: <summary of change>. Re-run required: <[>] task IDs or "none">. Added: <new task IDs or "none">.
 ```
 
-### G. Sync status field and INDEX.md
+### G. Sync front matter, plan summary, and INDEX.md
 
-After all edits, re-evaluate the plan's overall status:
+After all edits, re-evaluate the plan metadata and sync it in both the YAML front matter and `## Plan summary`:
 
-- If any task is now `[>]` or `[ ]` and the plan's `**Status:**` field is `` `done` `` → update it to `` `in-progress` `` and update the row in `plans/INDEX.md` to match
-- If all tasks are `[x]` → leave status as `` `done` `` (or set it if it was wrong) and update the row in `plans/INDEX.md` to match
-- Otherwise → no change needed
+- `task_count` must equal the number of `### T...` task blocks after the amendment
+- `updated_at` must be set to the current local date and time, format `YYYY-MM-DD HH:MM`
+- If all tasks are still `[ ]` and execution has not started, keep `status: pending`
+- If all tasks are `[x]`, set or keep `status: done`
+- Otherwise, set or keep `status: in-progress`
+- If the plan moves from `done` back to `pending` or `in-progress`, clear `completed_at` and set `Completed` in the summary to `not completed`
+- If the plan is `done`, ensure `completed_at` is populated and mirrored in the summary
+- Keep `Description`, `Status`, `Task count`, `Last updated`, `Started`, and `Completed` in `## Plan summary` aligned with the front matter
+- Update the row in `plans/INDEX.md` if the overall status changed
 
 This ensures a previously-completed plan that gets amended doesn't falsely show as `done` in the index.
 
