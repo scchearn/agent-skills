@@ -30,7 +30,7 @@ If a task filter is present, build the **target set** — the explicit list of t
 
 If no task filter is present, the target set is **all tasks** (normal behaviour).
 
-Read the plan file in full, including the YAML front matter and `## Plan summary`. Treat those metadata sections as authoritative plan metadata and keep them synchronized with each other whenever you edit the plan.
+Read the plan file in full, including the YAML front matter and all markdown sections. Treat the YAML front matter as the only authoritative plan metadata. If the file still contains a legacy `updated_at` field or `## Plan summary` section, remove them the next time you edit the plan.
 
 **Dependency rule for targeted runs:** if a targeted task has a dependency that is `[ ]`, `[~]`, or `[>]` (i.e. not yet `[x]`), that is a problem. See the pre-flight below — surface it to the user rather than skipping silently.
 
@@ -148,13 +148,17 @@ Edit the plan file: change the task's status to `[~]`.
 If this is the **first task being started** in this session (i.e. the front matter `status` is still `pending`), update the metadata before doing any code work:
 
 - Set front matter `status` to `in-progress`
-- Set front matter `updated_at` to the current local date and time, format `YYYY-MM-DD HH:MM`
-- Set front matter `started_at` to that same timestamp if it is currently `null`
+- Set front matter `started_at` to the current local date and time, format `YYYY-MM-DD HH:MM`, if it is currently `null`
 - Keep front matter `task_count` equal to the number of `### T...` task blocks currently in the plan
-- Sync `## Plan summary` so `Status`, `Task count`, `Last updated`, and `Started` match the front matter
-- Sync the corresponding row in `plans/INDEX.md` so `Status`, `Title`, `Plan`, `Description`, `Tasks`, `Created`, `Updated`, `Started`, and `Completed` mirror the front matter, and move the row if the status ordering changed
+- Sync the corresponding row in `plans/INDEX.md` so `Status`, `Title`, `Plan`, `Description`, and `Tasks` mirror the front matter, and move the row if the status ordering changed
 
-Even when the plan was already `in-progress`, refresh `updated_at` and `Last updated` whenever you edit the plan. Keep the row in `plans/INDEX.md` synchronized whenever any mirrored metadata changes. If you add tasks while splitting or correcting the plan, update `task_count` in the front matter, `## Plan summary`, and the `Tasks` column in the index.
+On any plan edit, clean up legacy metadata if present:
+
+- Remove front matter `updated_at`
+- Remove the entire `## Plan summary` section
+- If `plans/INDEX.md` still uses the older timestamp-heavy schema, rewrite it to the slim `Status | Title | Plan | Description | Tasks` schema before updating rows
+
+Even when the plan was already `in-progress`, keep the row in `plans/INDEX.md` synchronized whenever mirrored metadata changes. If you add tasks while splitting or correcting the plan, update `task_count` in the front matter and the `Tasks` column in the index.
 
 ### 2. Do the work
 
@@ -187,15 +191,12 @@ Run the verify command specified on the task. If no verify command is specified,
 
 Edit the plan file: change `[~]` to `[x]`.
 
-Refresh front matter `updated_at`, `## Plan summary` `Last updated`, and the matching `Updated` value in `plans/INDEX.md` after marking the task complete.
-
 If this was the **last remaining task** (all tasks in the plan are now `[x]`), also:
 
 - Update front matter `status` to `done`
 - Set front matter `completed_at` to the current local date and time, format `YYYY-MM-DD HH:MM`
 - Keep front matter `task_count` equal to the number of task blocks in the plan
-- Sync `## Plan summary` so `Status`, `Task count`, `Last updated`, and `Completed` match the front matter
-- Sync the row in `plans/INDEX.md` so every mirrored metadata column reflects the completed plan
+- Sync the row in `plans/INDEX.md` so `Status`, `Title`, `Plan`, `Description`, and `Tasks` reflect the completed plan
 
 ### 5. Log decisions
 
@@ -227,8 +228,6 @@ When writing the Handoff notes section, **overwrite** the previous content (do n
 ```md
 ## Handoff notes
 
-_Last updated: YYYY-MM-DD_
-
 **Completed this session:** T1 (title), T2 (title), ...
 **Re-runs completed:** Tx (title), ... ← omit line if none
 **Deferred re-runs:** Tx (title), ... ← omit line if none
@@ -237,8 +236,6 @@ _Last updated: YYYY-MM-DD_
 **Open questions / blockers:** <any issues, or "none">
 **Completion:** X of Y tasks done (Z%) — [>] tasks count as pending
 ```
-
-Whenever you overwrite `## Handoff notes`, also refresh front matter `updated_at`, `## Plan summary` `Last updated`, and the plan's `Updated` value in `plans/INDEX.md` to the current local timestamp.
 
 ---
 
@@ -255,7 +252,8 @@ Do not commit during the execution loop. Committing is handled separately. Your 
 - **Never execute tasks outside the target set** — if a filter was given, respect it.
 - **Never make destructive git operations** (force push, hard reset, rebase) without explicit user instruction.
 - **If the plan is wrong** — missing tasks, wrong dependencies, incorrect scope — add or fix tasks in the plan file and log the change as a decision entry. Do not just work around it silently.
-- **Keep YAML front matter, `## Plan summary`, and `plans/INDEX.md` synchronized** on every plan edit. If task count changes, update `task_count`, `Task count`, and the index `Tasks` column too. Use `-` in the index for null `started_at` or `completed_at` values.
+- **YAML front matter is the only authoritative plan metadata.** Do not duplicate it elsewhere in the body. When editing a legacy plan, remove any `updated_at` field and the entire `## Plan summary` section.
+- **Keep YAML front matter and `plans/INDEX.md` synchronized** on every plan edit. If task count changes, update `task_count` and the index `Tasks` column. If `plans/INDEX.md` still uses legacy timestamp columns, rewrite it to the slim schema before updating rows.
 - **Keep tasks atomic.** If a task is growing beyond ~20 files, split it into subtasks, add them to the plan, and log the split.
 - **Prefer independently re-runnable evidence.** When behavior changes, bias toward tests or validations others can run later instead of relying only on one-off local checks.
 - **Today's date for log entries:** use the actual current date from the system.

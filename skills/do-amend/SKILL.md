@@ -21,7 +21,7 @@ The amendment description is in the conversation context immediately above this 
 Read the plan file in full. Build a complete picture:
 
 1. **Goal and acceptance criteria** — what is the plan trying to achieve?
-2. **Front matter, plan summary, and related research** — note the current `title`, `slug`, `description`, `status`, `task_count`, timestamps, whether `## Plan summary` matches the YAML front matter, and any entries under `## Related research`
+2. **Front matter and related research** — note the current `title`, `slug`, `description`, `status`, `task_count`, `created_at`, `started_at`, `completed_at`, any legacy `updated_at` or `## Plan summary` content that should be removed, and any entries under `## Related research`
 3. **All tasks** — for every task, note: ID, title, status (`[ ]`/`[~]`/`[x]`/`[!]`/`[>]`), dependencies, verify command, files to read, files to modify, and notes
 4. **Dependency graph** — mentally map which tasks feed into which. A change to T2 may cascade to T4, T5, T7 even if T4 doesn't directly reference T2
 5. **Decisions log** — understand the history and what has already been decided
@@ -49,7 +49,7 @@ Apply these lenses:
 
 **Linked research** — does the amendment mean the plan should reference different or additional research? If so, update `## Related research` and any affected task `Files to read`.
 
-**Plan metadata** — does the amendment change the short description, task count, or overall status that the YAML front matter and `## Plan summary` should reflect?
+**Plan metadata** — does the amendment change the short description, task count, or overall status that the YAML front matter and `plans/INDEX.md` should reflect?
 
 **Validation quality** — does the amendment require stronger automated tests or validations so the updated behavior can be checked independently later, not just during this session?
 
@@ -100,8 +100,8 @@ Format it exactly like this:
 **Related research changes:**
   <describe any links to add, remove, or replace in `## Related research`, or "None">
 
-**Front matter / plan summary changes:**
-  <describe any description, task count, or status-related metadata updates needed, or "None">
+**Plan metadata / index changes:**
+  <describe any description, task count, status, or index-row updates needed, or "None">
 
 **Unaffected tasks:** Tx, Ty, Tz ...
   Reason: <brief justification that these are genuinely unaffected>
@@ -133,11 +133,11 @@ If the user asks for changes to the proposal, revise it and ask again. Repeat un
 
 Once confirmed, apply changes to the plan file in this exact order:
 
-### A. Update goal / acceptance criteria / related research / summary metadata (if needed)
+### A. Update goal / acceptance criteria / related research / plan metadata (if needed)
 
 Edit the Goal and Acceptance criteria sections if the amendment changes the observable end state. Keep the acceptance criteria checkable, and prefer independently re-runnable tests or validations where appropriate.
 
-If the observable scope changes materially, also update front matter `description` and `## Plan summary` `Description`. The description must stay within 70 tokens.
+If the observable scope changes materially, also update front matter `description`. The description must stay within 70 tokens.
 
 If the amendment changes which research memos the plan depends on, update `## Related research` so it lists only the relevant memo paths with short reasons. If additional research is clearly needed but missing, stop and recommend `/do-research <topic>` before applying speculative plan changes.
 
@@ -195,20 +195,22 @@ The log is **append-only**. Add exactly one entry:
 YYYY-MM-DD — Plan amended: <summary of change>. Re-run required: <[>] task IDs or "none">. Added: <new task IDs or "none">.
 ```
 
-### G. Sync front matter, plan summary, and INDEX.md
+### G. Sync front matter and INDEX.md
 
-After all edits, re-evaluate the plan metadata and sync it in both the YAML front matter and `## Plan summary`:
+After all edits, re-evaluate the plan metadata and sync it in the YAML front matter:
 
 - `task_count` must equal the number of `### T...` task blocks after the amendment
-- `updated_at` must be set to the current local date and time, format `YYYY-MM-DD HH:MM`
+- Preserve `created_at`
+- Preserve existing `started_at`; if execution has never started, keep it `null`
+- Remove front matter `updated_at` if it exists from an older plan format
 - If all tasks are still `[ ]` and execution has not started, keep `status: pending`
 - If all tasks are `[x]`, set or keep `status: done`
 - Otherwise, set or keep `status: in-progress`
-- If the plan moves from `done` back to `pending` or `in-progress`, clear `completed_at` and set `Completed` in the summary to `not completed`
-- If the plan is `done`, ensure `completed_at` is populated and mirrored in the summary
-- Keep `Description`, `Status`, `Task count`, `Last updated`, `Started`, and `Completed` in `## Plan summary` aligned with the front matter
-- Keep the row in `plans/INDEX.md` aligned with the front matter for `Status`, `Title`, `Plan`, `Description`, `Tasks`, `Created`, `Updated`, `Started`, and `Completed`
-- Use `-` in the index for null `started_at` or `completed_at` values
+- If the plan moves from `done` back to `pending` or `in-progress`, clear `completed_at`
+- If the plan is `done`, ensure `completed_at` is populated
+- Remove the entire legacy `## Plan summary` section if it is still present
+- If `plans/INDEX.md` still uses legacy timestamp columns, rewrite it to the slim `Status | Title | Plan | Description | Tasks` schema
+- Keep the row in `plans/INDEX.md` aligned with the front matter for `Status`, `Title`, `Plan`, `Description`, and `Tasks`
 - Update or create the row in `plans/INDEX.md` if any mirrored metadata changed, and move it if the status ordering changed
 
 This ensures a previously-completed plan that gets amended doesn't falsely show as `done` in the index.

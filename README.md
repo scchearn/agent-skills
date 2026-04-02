@@ -4,9 +4,95 @@ Reusable workflow skills for agent coding harnesses compatible with Anthropic's 
 
 These skills help an agent research a problem, save the findings, turn them into a concrete plan, execute that plan, and update that plan when the work changes.
 
-## Quick Start
+## Installation
 
-If your harness supports Anthropic-style `SKILL.md` skills, load this repo's `skills/` directory using that harness's normal skill setup.
+Use the matching global or project-level setup below.
+
+### Claude Code
+
+Claude Code looks for skills in:
+
+- `.claude/skills/` inside a project
+- `~/.claude/skills/` for your personal global skills
+
+Project install:
+
+```bash
+mkdir -p .claude/skills
+cp -R skills/* .claude/skills/
+```
+
+Global install:
+
+```bash
+mkdir -p ~/.claude/skills
+cp -R skills/* ~/.claude/skills/
+```
+
+### Codex
+
+Codex's normal skills directory is:
+
+- `~/.codex/skills/` for your personal skills
+
+Project level:
+
+Codex does not document a native project-local skills folder the same way Claude Code, OpenCode, and `pi` do. For project-specific behavior, use `AGENTS.md` in the repo.
+
+Global install:
+
+```bash
+mkdir -p ~/.codex/skills
+cp -R skills/* ~/.codex/skills/
+```
+
+### OpenCode
+
+OpenCode's native skill locations are:
+
+- `.opencode/skills/` inside a project
+- `~/.config/opencode/skills/` for your personal global skills
+
+Project install:
+
+```bash
+mkdir -p .opencode/skills
+cp -R skills/* .opencode/skills/
+```
+
+Global install:
+
+```bash
+mkdir -p ~/.config/opencode/skills
+cp -R skills/* ~/.config/opencode/skills/
+```
+
+OpenCode can also read `.claude/skills`, but `.opencode/skills` is the native location.
+
+### `pi`
+
+`pi` looks for skills in:
+
+- `.pi/skills/` inside a project
+- `~/.pi/agent/skills/` for your personal global skills
+
+Project install:
+
+```bash
+mkdir -p .pi/skills
+cp -R skills/* .pi/skills/
+```
+
+Global install:
+
+```bash
+mkdir -p ~/.pi/agent/skills
+cp -R skills/* ~/.pi/agent/skills/
+```
+
+`pi` can also load extra skill paths from `.pi/settings.json` or `~/.pi/agent/settings.json`.
+
+## Quick Start
 
 Once the skills are available, a typical flow looks like this:
 

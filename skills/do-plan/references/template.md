@@ -5,25 +5,11 @@ description: <Short plan summary, 70 tokens max>
 status: pending # pending | in-progress | done | abandoned
 task_count: 0
 created_at: YYYY-MM-DD HH:MM
-updated_at: YYYY-MM-DD HH:MM
 started_at: null
 completed_at: null
 ---
 
 # <Feature Name>
-
-## Plan summary
-
-<!-- Keep this section in sync with the YAML front matter above. -->
-
-- **Description:** <Short plan summary, 70 tokens max>
-- **Status:** `pending` <!-- pending | in-progress | done | abandoned -->
-- **Slug:** `<feature-slug>`
-- **Task count:** `0`
-- **Created:** `YYYY-MM-DD HH:MM`
-- **Last updated:** `YYYY-MM-DD HH:MM`
-- **Started:** `not started`
-- **Completed:** `not completed`
 
 ## Related research
 

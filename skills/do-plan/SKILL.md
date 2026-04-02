@@ -92,23 +92,14 @@ If the workspace documents a mandatory workflow, treat every required step as no
    - `status` — `pending` for all new plans created by `/do-plan`
    - `task_count` — the total number of task blocks in the plan
    - `created_at` — the actual local date and time when the plan was generated, format `YYYY-MM-DD HH:MM`
-   - `updated_at` — same value as `created_at` for a new plan, same format
    - `started_at` — `null` for a new plan
    - `completed_at` — `null` for a new plan
 
-   The markdown body must mirror that metadata in `## Plan summary`. Keep the summary values aligned with the front matter:
-
-   - `Description` mirrors `description`
-   - `Status` mirrors `status`
-   - `Slug` mirrors `slug`
-   - `Task count` mirrors `task_count`
-   - `Created` mirrors `created_at`
-   - `Last updated` mirrors `updated_at`
-   - `Started` mirrors `started_at` (`not started` when null)
-   - `Completed` mirrors `completed_at` (`not completed` when null)
+   YAML front matter is the only authoritative plan metadata. Do not duplicate that metadata elsewhere in the markdown body.
 
    Fill in the rest of the plan as follows:
 
+   - `# <title>` — same value as `title`
    - **Related research** — bullet list of the research memo paths you actually used while planning, with a short reason for each. If none were used, write `_None linked._`
    - **Goal** — one sentence describing the observable end state
    - **Acceptance criteria** — bullet list of checkable conditions. Always include the primary observable outcome and the relevant workspace-native validation commands. Prefer automated tests or validations that can be re-run independently by another engineer or CI.
@@ -116,14 +107,13 @@ If the workspace documents a mandatory workflow, treat every required step as no
    - **Decisions log** — add one initial entry: `YYYY-MM-DD — Initial plan created for: <feature description>`
    - **Handoff notes** — leave as `_No handoff yet._`
 
-Use today's actual local date and time for the front matter timestamps and use today's date for the decisions log entry.
+Use today's actual local date and time for `created_at`, and use today's date for the decisions log entry.
 
 4. Update `plans/INDEX.md`:
    - If `plans/` does not exist, create it first
+   - If `plans/INDEX.md` already exists in the older wide format with timestamp columns, rewrite it to the slim schema before inserting or updating rows
    - Add a new row for this plan under the `pending` section (after any `in-progress` rows, before `done` and `abandoned` rows)
-   - The row must mirror the plan's front matter using this format: `| \`pending\` | <title> | [<slug>](<slug>.md) | <description> | <task_count> | YYYY-MM-DD HH:MM | YYYY-MM-DD HH:MM | - | - |`
-   - Use `-` in the `Started` and `Completed` columns when `started_at` or `completed_at` are `null`
-   - Use today's actual date and current time for the `Created` and `Updated` columns on a new plan
+   - The row must mirror the plan's front matter using this format: `| \`pending\` | <title> | [<slug>](<slug>.md) | <description> | <task_count> |`
    - If `plans/INDEX.md` does not exist, create it with this header and table:
 
 ```md
@@ -132,16 +122,15 @@ Use today's actual local date and time for the front matter timestamps and use t
 <!-- Status key: pending | in-progress | done | abandoned -->
 <!-- Ordered by: in-progress → pending → done → abandoned -->
 <!-- Updated automatically by /do-plan, /do-start, /do-amend -->
-<!-- Each row mirrors plan front matter: status, title, slug link, description, task_count, created_at, updated_at, started_at, completed_at -->
-<!-- Use `-` for null started_at/completed_at values. -->
+<!-- Each row mirrors plan front matter: status, title, slug link, description, task_count -->
 
-| Status | Title | Plan | Description | Tasks | Created | Updated | Started | Completed |
-| ------ | ----- | ---- | ----------- | ----- | ------- | ------- | ------- | --------- |
+| Status | Title | Plan | Description | Tasks |
+| ------ | ----- | ---- | ----------- | ----- |
 ```
 
     - Keep the rows ordered as `in-progress`, then `pending`, then `done`, then `abandoned`
 
-`/do-plan` must create the YAML front matter, the mirrored `## Plan summary` section, the `## Related research` section, and `plans/INDEX.md`. `/do-start` and `/do-amend` rely on the plan structure being present and accurate.
+`/do-plan` must create the YAML front matter, the required markdown sections, and `plans/INDEX.md`. `/do-start` and `/do-amend` rely on the YAML metadata and section headers being present and accurate.
 
 ---
 
