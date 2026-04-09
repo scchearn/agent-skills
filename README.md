@@ -1,8 +1,12 @@
-# Agent Planning Skill Framework
+# Agent Workflow Skill Framework
 
 Reusable workflow skills for agent coding harnesses compatible with Anthropic's skill layout.
 
-These skills help an agent research a problem, save the findings, turn them into a concrete plan, execute that plan, and update that plan when the work changes.
+These skills help an agent research a problem, save the findings, turn them into a concrete plan, execute that plan, update that plan when the work changes, and build persistent markdown wikis from source material.
+
+The wiki skills are designed for an Obsidian-style environment: durable notes use kebab-case filenames, internal links use `[[wikilinks]]`, and the workflow prefers many small connected notes over large isolated summaries.
+
+When a wiki already exists, the non-wiki workflow skills can consult it as a durable memory layer and may write back only findings that are worth preserving. Current repo state and primary docs still win if the wiki is stale or wrong.
 
 ## Installation
 
@@ -101,20 +105,45 @@ Once the skills are available, a typical flow looks like this:
 /do-plan add audit logging for failed sign-ins
 /do-start plans/audit-logging-failed-sign-ins.md
 /do-amend plans/audit-logging-failed-sign-ins.md
+
+/do-wiki-build build a company research wiki for local source files
+/do-wiki-ingest raw/acme-q1-shareholder-letter.md
+/do-wiki-lint
+/do-wiki-query what changed in the latest quarter?
 ```
 
 `/do-research` writes a reusable research note to `plans/research/`. Later, `/do-plan` looks for relevant research notes there before it creates a plan.
 
 Many harnesses expose skills as slash commands. If yours uses a different invocation style, use the same skill names and arguments in the format your harness expects.
 
+If you already have an existing wiki-like notes corpus instead of starting from scratch, use `/do-wiki-align [root]` before your first lint or query pass.
+
+## Wiki Conventions
+
+The wiki workflow assumes these defaults unless the workspace already has a stronger established convention:
+
+- durable note filenames use kebab-case such as `pricing-strategy.md`
+- special root files keep their fixed names: `index.md`, `overview.md`, `log.md`, and `SCHEMA.md`
+- internal links use `[[pricing-strategy]]`
+- H1 titles can remain human-readable, such as `# Pricing Strategy`
+- `index.md` and `overview.md` act as map-of-content hub notes
+- source, topic, entity, concept, and analysis notes should cross-link and, when appropriate, link back to each other
+- the goal is a graph of small reusable notes that is easy to traverse in Obsidian and easy for an LLM to inspect
+- `AGENTS.md` / `CLAUDE.md` files should stay lean operational entrypoints and point into the wiki for deep, fast-aging reference material
+
 ## Which Skill Should I Use?
 
 | Skill | Use it when | What you get |
 | --- | --- | --- |
-| [do-research](./skills/do-research/) | You need evidence before deciding what to build or change | A research note in `plans/research/` with findings, constraints, and the next recommended step |
-| [do-plan](./skills/do-plan/) | You have a feature, bug fix, or task that should be broken into ordered steps | A plan file in `plans/` with concrete tasks, verification steps, and links to any research it used |
-| [do-start](./skills/do-start/) | You want the agent to execute the next unblocked task from a plan | Autonomous task execution with verification and plan updates |
-| [do-amend](./skills/do-amend/) | A plan already exists, but requirements or scope changed | An impact analysis, then a safe update to the plan after approval |
+| [do-research](./skills/do-research/) | You need evidence before deciding what to build or change | A research note in `plans/research/` with findings, constraints, and the next recommended step, plus optional durable wiki updates when warranted |
+| [do-plan](./skills/do-plan/) | You have a feature, bug fix, or task that should be broken into ordered steps | A plan file in `plans/` with concrete tasks, verification steps, links to any research it used, and optional durable wiki updates when warranted |
+| [do-start](./skills/do-start/) | You want the agent to execute the next unblocked task from a plan | Autonomous task execution with verification, plan updates, and optional durable wiki write-back |
+| [do-amend](./skills/do-amend/) | A plan already exists, but requirements or scope changed | An impact analysis, then a safe update to the plan after approval, with optional durable wiki updates when warranted |
+| [do-wiki-build](./skills/do-wiki-build/) | You want a persistent markdown wiki scaffold for a topic, corpus, or research area | An Obsidian-friendly wiki structure with raw-source, schema, map-of-content, log, and note-graph conventions ready for future ingestion |
+| [do-wiki-align](./skills/do-wiki-align/) | You already have a wiki-like notes corpus and want it normalized to the repo conventions | A proposal-first retrofit pass that aligns structure, naming, hub notes, links, and relevant AGENTS/CLAUDE files to the Obsidian-friendly note graph model |
+| [do-wiki-ingest](./skills/do-wiki-ingest/) | You already have a wiki and want to compile a local source into it | Updated source, topic, entity, and concept notes plus backlink-aware graph expansion, refreshed `index.md`, and a log entry |
+| [do-wiki-lint](./skills/do-wiki-lint/) | You want to health-check the wiki for contradictions, stale claims, unresolved wikilinks, or graph drift | A maintenance pass that applies safe graph fixes, updates the log, and calls out unresolved gaps |
+| [do-wiki-query](./skills/do-wiki-query/) | You want an answer grounded in the wiki, or a reusable synthesis filed back into it | A cited answer from the current wiki plus an optional linked analysis page, related-note updates, index refresh, and log entry when the result has durable value |
 
 ## Recommended Workflow
 
@@ -124,7 +153,24 @@ Many harnesses expose skills as slash commands. If yours uses a different invoca
 3. Run `/do-start plans/<slug>.md` to execute the plan in order.
 4. Run `/do-amend plans/<slug>.md` if new requirements appear or completed work needs to be revisited.
 
-You do not need to use all four skills every time. If the work is already well understood, it is fine to start with `/do-plan`.
+For knowledge-base workflows, a typical flow is:
+
+1. Run `/do-wiki-build <topic or corpus>` to scaffold the wiki.
+2. If you already have a wiki-like notes corpus, run `/do-wiki-align [root]` first instead of rebuilding from scratch.
+3. Run `/do-wiki-ingest <local source path>` repeatedly to compile sources into it.
+4. Run `/do-wiki-lint` periodically to health-check the wiki and keep structure and synthesis aligned.
+5. Run `/do-wiki-query <question>` to answer from the wiki and optionally save durable analyses back into it.
+
+If you only want to audit or trim `AGENTS.md` / `CLAUDE.md` files so they point to the wiki better, use:
+
+1. `/do-wiki-align --guidance-only`
+2. `/do-wiki-align --guidance-only <app, package, service, or subtree>`
+
+In `--guidance-only` mode, the wiki is read-only context only. The skill should update only the relevant `AGENTS.md` / `CLAUDE.md` files and should not rename, move, or edit wiki pages.
+
+You do not need to use every skill every time. If the work is already well understood, it is fine to start with `/do-plan`.
+
+If `plans/research/` or a wiki already exists, `/do-research`, `/do-plan`, `/do-start`, and `/do-amend` can reuse that state. They should only write back into the wiki when the finding is durable enough to help future sessions.
 
 ## Common Examples
 
@@ -135,6 +181,16 @@ You do not need to use all four skills every time. If the work is already well u
 /do-start plans/admin-orders-csv-export.md T3
 /do-start plans/admin-orders-csv-export.md T3,T5
 /do-start plans/admin-orders-csv-export.md T3-T5
+
+/do-wiki-build build a competitor intelligence wiki
+/do-wiki-ingest raw/competitors/acme-launch-post.md
+/do-wiki-ingest raw/competitors/acme-q1-earnings.pdf
+/do-wiki-lint competitors
+/do-wiki-query how does acme's launch strategy differ from last quarter?
+
+/do-wiki-align docs/knowledge
+/do-wiki-align --guidance-only apps/api
+/do-wiki-lint docs/knowledge
 ```
 
 For `/do-amend`, describe the change first, then invoke the skill against the existing plan:
@@ -149,6 +205,12 @@ We now need the CSV export to include refunded orders too.
 - `plans/research/<slug>.md` for reusable research findings
 - `plans/<slug>.md` for the working plan
 - `plans/INDEX.md` for a simple overview of every plan, so you can quickly see what is pending, in progress, or done
+- `raw/` and `wiki/` structures when you use the wiki-building workflow
+- Obsidian-style wiki notes with kebab-case filenames and `[[wikilinks]]`
+- optional durable wiki updates from research, planning, execution, and amendment workflows when a wiki already exists
+- normalized hub notes, link styles, durable note identities, and leaner guidance-file pointers when you use the wiki-alignment workflow
+- appended `wiki/log.md` lint entries and wiki maintenance edits when you use the wiki-lint workflow
+- optional `wiki/analyses/` pages plus query log entries when you use the wiki-query workflow
 
 This keeps research, planning, and execution state in the repository instead of burying it in chat history. Research notes live alongside plans, while `plans/INDEX.md` gives you one place to check overall plan progress.
 
@@ -168,6 +230,16 @@ After you start using the framework, you will typically have:
     ├── do-plan/
     │   └── SKILL.md
     ├── do-research/
+    │   └── SKILL.md
+    ├── do-wiki-build/
+    │   └── SKILL.md
+    ├── do-wiki-align/
+    │   └── SKILL.md
+    ├── do-wiki-ingest/
+    │   └── SKILL.md
+    ├── do-wiki-lint/
+    │   └── SKILL.md
+    ├── do-wiki-query/
     │   └── SKILL.md
     └── do-start/
         └── SKILL.md

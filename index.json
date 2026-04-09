@@ -1,28 +1,53 @@
 {
   "name": "agent-skills",
   "version": "0.1.0",
-  "description": "Planning skill framework for agent coding harnesses compatible with Anthropic's skill layout",
+  "description": "Workflow skill framework for agent coding harnesses compatible with Anthropic's skill layout",
   "skills": [
     {
       "name": "do-amend",
       "path": "skills/do-amend/SKILL.md",
-      "description": "Amend an in-flight plan after requirements or scope change"
+      "description": "Amend an in-flight plan after requirements or scope change, and optionally preserve durable amendment findings in an existing wiki"
     },
     {
       "name": "do-plan",
       "path": "skills/do-plan/SKILL.md",
-      "description": "Create a dependency-ordered implementation plan using current repo context and relevant research",
+      "description": "Create a dependency-ordered implementation plan using current repo context, relevant research, and optional wiki context",
       "template": "skills/do-plan/references/template.md"
     },
     {
       "name": "do-start",
       "path": "skills/do-start/SKILL.md",
-      "description": "Execute the next unblocked task from a plan"
+      "description": "Execute the next unblocked task from a plan and optionally file durable findings back into an existing wiki"
     },
     {
       "name": "do-research",
       "path": "skills/do-research/SKILL.md",
-      "description": "Research workspace context, APIs, and external evidence, then persist a reusable memo for planning"
+      "description": "Research workspace context, APIs, and external evidence, then persist a reusable memo and optionally file durable findings into an existing wiki"
+    },
+    {
+      "name": "do-wiki-build",
+      "path": "skills/do-wiki-build/SKILL.md",
+      "description": "Create or extend an Obsidian-friendly markdown wiki scaffold with kebab-case note graph conventions"
+    },
+    {
+      "name": "do-wiki-align",
+      "path": "skills/do-wiki-align/SKILL.md",
+      "description": "Inspect and align an existing wiki-like markdown corpus, and in monorepos audit relevant AGENTS.md and CLAUDE.md files, to the repo's Obsidian-friendly note-graph conventions"
+    },
+    {
+      "name": "do-wiki-ingest",
+      "path": "skills/do-wiki-ingest/SKILL.md",
+      "description": "Ingest a local source file into an existing markdown wiki and expand the linked note graph"
+    },
+    {
+      "name": "do-wiki-lint",
+      "path": "skills/do-wiki-lint/SKILL.md",
+      "description": "Run a wiki graph health check, apply safe maintenance fixes, and record unresolved findings"
+    },
+    {
+      "name": "do-wiki-query",
+      "path": "skills/do-wiki-query/SKILL.md",
+      "description": "Answer questions from an existing markdown wiki and optionally file durable linked analyses back into it"
     }
   ]
 }

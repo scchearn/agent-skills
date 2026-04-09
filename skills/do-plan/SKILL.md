@@ -1,9 +1,9 @@
 ---
 name: do-plan
-description: Create a structured implementation plan for a feature or task in the current workspace. Use current repo context and any relevant persisted research to build atomic, verifiable, dependency-ordered tasks before execution.
+description: Create a structured implementation plan for a feature or task in the current workspace. Use current repo context, any relevant persisted research, and optionally an existing wiki to build atomic, verifiable, dependency-ordered tasks before execution.
 argument-hint: <feature description>
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Write
+allowed-tools: Read, Glob, Grep, Write, Edit
 ---
 
 You are a senior engineer working in the current workspace. Your job is to decompose a feature description into a rigorous, executable implementation plan, not to write any code yet.
@@ -39,6 +39,15 @@ After that, read the most relevant current workspace material you can find, incl
 4. Schema, model, migration, API contract, or generated-artifact files if persisted data or external contracts are touched
 5. Changelog, release notes, or public API docs if the feature affects externally visible behavior
 
+### Optional wiki context
+
+If the workspace contains a wiki root with files such as `SCHEMA.md`, `index.md`, `overview.md`, or `log.md`:
+
+1. Read the schema and main hub notes first
+2. Read only the wiki notes directly relevant to the feature area
+3. Treat the wiki as an accelerator for durable workspace knowledge, not as the authority over the current repo state
+4. If the wiki conflicts with current repo state, trust the current repo state and note the mismatch in the plan's decisions log if it materially affects planning
+
 If the workspace lacks formal docs, infer conventions from adjacent code, tests, config files, and scripts. If key assumptions still cannot be established safely after this research, stop and recommend `/do-research <topic>` instead of inventing them.
 
 Do not skip this step. Plans written without reading the docs will be wrong.
@@ -56,7 +65,7 @@ Apply this strategy:
    - **Verifiable** — has a concrete workspace-native verify command (focused test, typecheck, lint, build, script, etc.)
    - **Externally checkable** — prefer tasks that add or update automated tests or validations another engineer or CI can run independently, rather than relying only on local manual checking
    - **Dependency-aware** — explicitly lists which task IDs must be `[x]` before it can start
-   - **File-annotated** — populate `Files to read` (relevant research memos, docs, contracts, existing source files, tests, or other references to consult) and `Files to modify` (files that will be created or changed) using the knowledge you gained in Step 1. Be specific and use full paths relative to the workspace root. This lets `/do-start` go straight to the right files without re-researching.
+   - **File-annotated** — populate `Files to read` (relevant research memos, wiki notes, docs, contracts, existing source files, tests, or other references to consult) and `Files to modify` (files that will be created or changed) using the knowledge you gained in Step 1. Be specific and use full paths relative to the workspace root. This lets `/do-start` go straight to the right files without re-researching.
 4. Assign IDs sequentially: T1, T2, T3 ...
 5. Research tasks that remove critical uncertainty come first. Foundational tasks (data model, shared types/utilities, config) come next. Features built on them come after. Docs, changelog, and release-note work come last.
 
@@ -134,7 +143,39 @@ Use today's actual local date and time for `created_at`, and use today's date fo
 
 ---
 
-## Step 4 — Report back
+## Step 4 — Optional wiki write-back
+
+If a wiki exists, decide whether planning surfaced durable knowledge worth preserving there.
+
+Good candidates include:
+
+- stable architecture constraints
+- durable workflow or generation requirements
+- reusable domain distinctions
+- clarified system boundaries or invariants
+
+Do not write back:
+
+- the task list itself
+- ephemeral sequencing choices
+- narrow task-management chatter
+
+If the finding is durable:
+
+1. Prefer updating an existing relevant topic, concept, entity, or analysis note
+2. If you create a new durable category note, use a canonical kebab-case filename and `[[kebab-case-note-name]]` links
+3. Update `index.md` if durable pages changed
+4. Append `log.md` with a parseable heading like:
+
+```md
+## [YYYY-MM-DD] plan | <feature>
+```
+
+If no wiki exists or nothing rises above planning noise, do nothing beyond the plan file.
+
+---
+
+## Step 5 — Report back
 
 After writing the file, output:
 
@@ -142,6 +183,9 @@ After writing the file, output:
 Plan written to plans/<slug>.md
 
 Related research:
+  - <path or "none">
+
+Filed back into wiki:
   - <path or "none">
 
 Goal: <goal sentence>

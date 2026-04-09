@@ -1,9 +1,9 @@
 ---
 name: do-research
-description: Research workspace context, APIs, implementation options, or external evidence before planning or execution. Persist an evidence-backed memo the rest of the workflow can reuse.
+description: Research workspace context, APIs, implementation options, or external evidence before planning or execution. Persist an evidence-backed memo the rest of the workflow can reuse, and optionally file durable findings into an existing wiki.
 argument-hint: <topic or question>
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Bash, WebFetch, Write
+allowed-tools: Read, Glob, Grep, Bash, WebFetch, Write, Edit
 ---
 
 You are a senior engineer researching a question in the current workspace. Your job is to gather evidence, reduce uncertainty, and persist a reusable research memo under `plans/research/`. Do not modify source code or implementation files.
@@ -33,6 +33,15 @@ Collect evidence in this order, using the best sources available:
 5. High-signal online discovery such as official issues, release notes, maintainer discussions, or reputable technical writeups when primary sources are insufficient
 
 Prefer primary sources over summaries. When external research matters, cite where the information came from and separate that from workspace-local evidence.
+
+### Optional wiki context
+
+If the workspace contains a wiki root with files such as `SCHEMA.md`, `index.md`, `overview.md`, or `log.md`, treat it as a high-signal memory layer:
+
+1. Read the schema and the main hub notes first
+2. Read only the notes directly relevant to the research topic
+3. Use the wiki to accelerate orientation and reuse durable prior knowledge
+4. If the wiki conflicts with current repo state, source code, or primary documentation, trust the current repo state and note the mismatch in the memo if it matters
 
 ---
 
@@ -104,9 +113,43 @@ The memo should be useful on its own to someone opening the file later. Be concr
 
 ---
 
-## Step 5 — Report back
+## Step 5 — Optional wiki write-back
 
-After writing the file, output exactly:
+If a wiki exists, decide whether the research produced durable findings worth preserving there.
+
+Good candidates include:
+
+- stable architecture facts
+- durable domain clarifications
+- recurring debugging discoveries or gotchas
+- clarified terminology
+- reusable comparisons or constraints that future sessions will likely need
+
+Do not write back:
+
+- temporary uncertainty
+- speculative hypotheses
+- narrow planning chatter
+- one-off dead ends
+
+If the findings are durable:
+
+1. Prefer updating an existing relevant topic, concept, entity, source, or analysis note over creating a new one
+2. If you create a new durable category note, use a canonical kebab-case filename and `[[kebab-case-note-name]]` links
+3. Update `index.md` if durable pages changed
+4. Append `log.md` with a parseable heading like:
+
+```md
+## [YYYY-MM-DD] research | <topic>
+```
+
+If no wiki exists or nothing is durable enough, do nothing beyond the research memo.
+
+---
+
+## Step 6 — Report back
+
+After writing the file, output:
 
 ```md
 Research written to plans/research/<slug>.md
@@ -120,6 +163,12 @@ Research written to plans/research/<slug>.md
 
 - <specific recommendation>
 
+### Filed back into wiki
+
+- <path or "none">
+- Index: <path or "unchanged">
+- Log: <path or "unchanged">
+
 ### Suggested command
 
 - <command>
@@ -129,8 +178,9 @@ Research written to plans/research/<slug>.md
 
 ## Rules
 
-- Do not modify source code or implementation files. Writing under `plans/research/` is required.
+- Do not modify source code or implementation files. Writing under `plans/research/` is required. Updating wiki notes is allowed only when a wiki already exists and the finding is durably reusable.
 - Cite file paths, commands, and external sources.
 - Make uncertainty explicit. Do not guess.
 - Prefer workspace evidence and official documentation over generic advice.
+- If the wiki conflicts with current repo state or primary docs, trust current repo state.
 - If research shows the current plan is wrong, say so and recommend `/do-amend plans/<slug>.md`.

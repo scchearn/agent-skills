@@ -1,6 +1,6 @@
 ---
 name: do-amend
-description: Amend an existing plan file — add tasks, modify pending tasks, and mark completed tasks that are invalidated by the change as [>] (needs re-run). Walks through analysis, cascading impact, and user confirmation before touching the file. Use when requirements or scope have changed mid-execution.
+description: Amend an existing plan file — add tasks, modify pending tasks, and mark completed tasks that are invalidated by the change as [>] (needs re-run). Walks through analysis, cascading impact, and user confirmation before touching the file. When a wiki exists, it may also preserve durable amendment findings there.
 argument-hint: plans/<slug>.md # describe what to amend in your message, then invoke this skill
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Glob, Grep
@@ -26,6 +26,7 @@ Read the plan file in full. Build a complete picture:
 4. **Dependency graph** — mentally map which tasks feed into which. A change to T2 may cascade to T4, T5, T7 even if T4 doesn't directly reference T2
 5. **Decisions log** — understand the history and what has already been decided
 6. **Current state** — how far along is execution? What's been done, what's in flight?
+7. **Optional wiki context** — if a wiki exists, read the schema and only the notes directly relevant to the plan area or amendment. Treat the wiki as a durable memory layer, not the authority over current repo state.
 
 Do not modify anything yet.
 
@@ -50,6 +51,8 @@ Apply these lenses:
 **Linked research** — does the amendment mean the plan should reference different or additional research? If so, update `## Related research` and any affected task `Files to read`.
 
 **Plan metadata** — does the amendment change the short description, task count, or overall status that the YAML front matter and `plans/INDEX.md` should reflect?
+
+**Wiki impact** — if a wiki exists, does the amendment reveal a durable architecture, domain, or workflow change that should be preserved there after confirmation? Do not confuse this with task-management chatter.
 
 **Validation quality** — does the amendment require stronger automated tests or validations so the updated behavior can be checked independently later, not just during this session?
 
@@ -102,6 +105,9 @@ Format it exactly like this:
 
 **Plan metadata / index changes:**
   <describe any description, task count, status, or index-row updates needed, or "None">
+
+**Wiki impact:**
+  <describe any durable wiki notes that should be updated after confirmation, or "None">
 
 **Unaffected tasks:** Tx, Ty, Tz ...
   Reason: <brief justification that these are genuinely unaffected>
@@ -215,6 +221,21 @@ After all edits, re-evaluate the plan metadata and sync it in the YAML front mat
 
 This ensures a previously-completed plan that gets amended doesn't falsely show as `done` in the index.
 
+### H. Optional wiki write-back
+
+If a wiki exists and the confirmed amendment reveals durable knowledge worth preserving:
+
+1. Prefer updating an existing relevant topic, concept, entity, or analysis note
+2. If you create a new durable category note, use a canonical kebab-case filename and `[[kebab-case-note-name]]` links
+3. Update `index.md` if durable pages changed
+4. Append `log.md` with a parseable heading like:
+
+```md
+## [YYYY-MM-DD] amend | <plan or scope>
+```
+
+Do not write back ephemeral plan-management chatter or speculative scope notes.
+
 ---
 
 ## Phase 6 — Report
@@ -227,6 +248,7 @@ Amendment applied to plans/<slug>.md
 [>] Needs re-run:   Tx (title), Ty (title)   ← or "none"
     Modified scope: Tx (title)                ← or "none"
     New tasks:      Tx (title), Ty (title)    ← or "none"
+    Wiki updates:   path/to/note.md          ← or "none"
 
 To resume execution: /do-start plans/<slug>.md
 Note: /do-start will detect the [>] tasks and prompt you on how to handle them.
@@ -240,5 +262,6 @@ Note: /do-start will detect the [>] tasks and prompt you on how to handle them.
 - **Never apply changes before user confirmation in Phase 4.**
 - **Preserve all task IDs.** Never renumber existing tasks.
 - **Do not execute any implementation work.** Your job is plan surgery only.
+- **If a wiki exists** — you may update it only with durable amendment findings. Current repo state wins if the wiki is stale or wrong.
 - **Cascade aggressively, apply conservatively.** Flag every possibly-affected task in the proposal. Mark `[>]` only what the user confirms truly needs re-running.
 - **Prefer independently re-runnable validation.** When the amendment changes behavior, bias toward updating or adding tests that others can run later.

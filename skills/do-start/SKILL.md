@@ -1,6 +1,6 @@
 ---
 name: do-start
-description: Begin or resume execution of a plan file. Reads the plan, picks the next unblocked task, and works through it autonomously — verifying each task before marking it done. Optionally target specific tasks.
+description: Begin or resume execution of a plan file. Reads the plan, picks the next unblocked task, and works through it autonomously — verifying each task before marking it done. Optionally target specific tasks, and if a wiki exists, preserve only durable findings there.
 argument-hint: plans/<slug>.md [T3 | T3,T5,T7 | T3-T7]
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
@@ -31,6 +31,16 @@ If a task filter is present, build the **target set** — the explicit list of t
 If no task filter is present, the target set is **all tasks** (normal behaviour).
 
 Read the plan file in full, including the YAML front matter and all markdown sections. Treat the YAML front matter as the only authoritative plan metadata. If the file still contains a legacy `updated_at` field or `## Plan summary` section, remove them the next time you edit the plan.
+
+## Step 0.5 — Optional wiki context
+
+If the workspace contains a wiki root with files such as `SCHEMA.md`, `index.md`, `overview.md`, or `log.md`:
+
+1. Read the schema and the main hub notes first
+2. Read any relevant wiki notes already named in the task's `Files to read`
+3. If the plan does not already name wiki notes, search for notes directly relevant to the next target task
+4. Treat the wiki as an accelerator for durable workspace knowledge, not as the authority over current repo state
+5. If current repo state, tests, or primary docs conflict with the wiki, trust the current repo state and update the wiki later only if the correction is durable
 
 **Dependency rule for targeted runs:** if a targeted task has a dependency that is `[ ]`, `[~]`, or `[>]` (i.e. not yet `[x]`), that is a problem. See the pre-flight below — surface it to the user rather than skipping silently.
 
@@ -198,14 +208,44 @@ If this was the **last remaining task** (all tasks in the plan are now `[x]`), a
 - Keep front matter `task_count` equal to the number of task blocks in the plan
 - Sync the row in `plans/INDEX.md` so `Status`, `Title`, `Plan`, `Description`, and `Tasks` reflect the completed plan
 
-### 5. Log decisions
+### 5. Optional wiki write-back
+
+If a wiki exists, decide whether the completed task produced durable findings worth preserving there.
+
+Good candidates include:
+
+- stable architecture facts verified during implementation
+- durable integration constraints or behavior
+- recurring debugging discoveries or operational gotchas
+- clarified domain rules or reusable comparisons
+
+Do not write back:
+
+- raw task progress notes
+- temporary dead ends
+- implementation minutiae unlikely to be reused
+
+If the finding is durable:
+
+1. Prefer updating an existing relevant topic, concept, entity, source, or analysis note
+2. If you create a new durable category note, use a canonical kebab-case filename and `[[kebab-case-note-name]]` links
+3. Update `index.md` if durable pages changed
+4. Append `log.md` with a parseable heading like:
+
+```md
+## [YYYY-MM-DD] execution | <task or feature>
+```
+
+Track any wiki paths updated this session so they can be mentioned in the handoff note.
+
+### 6. Log decisions
 
 If you made any non-obvious implementation decision during this task (chose one approach over another, discovered a constraint, found an inconsistency with the docs), append an entry to the Decisions log:
 `YYYY-MM-DD — <decision and rationale>`
 
 The decisions log is **append-only**. Never edit or delete existing entries.
 
-### 6. Loop
+### 7. Loop
 
 Go back to Orientation and pick the next task in the queue.
 
@@ -232,6 +272,7 @@ When writing the Handoff notes section, **overwrite** the previous content (do n
 **Re-runs completed:** Tx (title), ... ← omit line if none
 **Deferred re-runs:** Tx (title), ... ← omit line if none
 **Targeted run:** T3-T7 only ← omit line if full plan run
+**Wiki updates:** path/to/note.md, ... or none
 **Next task:** Tx — <title>
 **Open questions / blockers:** <any issues, or "none">
 **Completion:** X of Y tasks done (Z%) — [>] tasks count as pending
@@ -252,6 +293,7 @@ Do not commit during the execution loop. Committing is handled separately. Your 
 - **Never execute tasks outside the target set** — if a filter was given, respect it.
 - **Never make destructive git operations** (force push, hard reset, rebase) without explicit user instruction.
 - **If the plan is wrong** — missing tasks, wrong dependencies, incorrect scope — add or fix tasks in the plan file and log the change as a decision entry. Do not just work around it silently.
+- **If a wiki exists** — you may update it only with durable, reusable findings. Current repo state wins if the wiki is stale or wrong.
 - **YAML front matter is the only authoritative plan metadata.** Do not duplicate it elsewhere in the body. When editing a legacy plan, remove any `updated_at` field and the entire `## Plan summary` section.
 - **Keep YAML front matter and `plans/INDEX.md` synchronized** on every plan edit. If task count changes, update `task_count` and the index `Tasks` column. If `plans/INDEX.md` still uses legacy timestamp columns, rewrite it to the slim schema before updating rows.
 - **Keep tasks atomic.** If a task is growing beyond ~20 files, split it into subtasks, add them to the plan, and log the split.
