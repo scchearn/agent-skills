@@ -1,0 +1,9 @@
+{
+  "name": "agent-md-management",
+  "description": "Tools to maintain and improve agent guidance markdown files such as AGENTS.md and CLAUDE.md.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Anthropic",
+    "email": "support@anthropic.com"
+  }
+}

@@ -135,6 +135,7 @@ The wiki workflow assumes these defaults unless the workspace already has a stro
 
 | Skill | Use it when | What you get |
 | --- | --- | --- |
+| [agent-md-improver](./skills/agent-md-management/skills/agent-md-improver/) | You want to audit or improve `AGENTS.md`, `CLAUDE.md`, or local guidance files so future agent sessions have better working context | A quality report plus targeted guidance-file updates after approval, with `AGENTS.md` preferred for shared neutral guidance and `CLAUDE.md` supported when present |
 | [do-research](./skills/do-research/) | You need evidence before deciding what to build or change | A research note in `plans/research/` with findings, constraints, and the next recommended step, plus optional durable wiki updates when warranted |
 | [do-plan](./skills/do-plan/) | You have a feature, bug fix, or task that should be broken into ordered steps | A plan file in `plans/` with concrete tasks, verification steps, links to any research it used, and optional durable wiki updates when warranted |
 | [do-start](./skills/do-start/) | You want the agent to execute the next unblocked task from a plan | Autonomous task execution with verification, plan updates, and optional durable wiki write-back |

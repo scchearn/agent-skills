@@ -4,6 +4,16 @@
   "description": "Workflow skill framework for agent coding harnesses compatible with Anthropic's skill layout",
   "skills": [
     {
+      "name": "agent-md-improver",
+      "path": "skills/agent-md-management/skills/agent-md-improver/SKILL.md",
+      "description": "Audit and improve agent guidance markdown files such as AGENTS.md, CLAUDE.md, and local overrides"
+    },
+    {
+      "name": "revise-agent-md",
+      "path": "skills/agent-md-management/skills/revise-agent-md/SKILL.md",
+      "description": "Capture useful learnings from the current session and propose concise updates to agent guidance markdown files"
+    },
+    {
       "name": "do-amend",
       "path": "skills/do-amend/SKILL.md",
       "description": "Amend an in-flight plan after requirements or scope change, and optionally preserve durable amendment findings in an existing wiki"
