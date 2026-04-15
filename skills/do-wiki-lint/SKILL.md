@@ -196,7 +196,7 @@ Wiki lint completed for <scope>
 
 ### Next useful command
 
-- `/do-wiki-ingest <local source path>`
+- `/do-wiki-add <local source path or topic>`
 ```
 
 If the pass found no significant issues, say so explicitly and still note any residual risks or thin areas.

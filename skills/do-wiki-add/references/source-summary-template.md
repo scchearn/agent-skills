@@ -15,8 +15,9 @@ Suggested structure:
 ```md
 # <Source Title>
 
-- Source path: `<local/path/to/source>`
-- Source type: <article | note | transcript | report | pdf | dataset | other>
+- Source path: `<local/path/to/source>` (file mode) or `Source: conversation context` (chat-context mode)
+- Source type: <article | note | transcript | report | pdf | dataset | conversation | other>
+- Conversation date: YYYY-MM-DD (chat-context mode only; omit in file mode)
 - Ingested: YYYY-MM-DD
 - Status: active
 
@@ -57,7 +58,7 @@ Suggested structure:
 
 Notes:
 
-- Keep the source path explicit.
+- Keep the source path explicit. In chat-context mode, use `Source: conversation context` and include `Conversation date`.
 - Prefer links to repeated prose.
 - Use `[[kebab-case-note-name]]` for durable internal links.
 - If the source is narrow, keep the page short.

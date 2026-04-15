@@ -45,6 +45,6 @@ Examples:
 
 Good outputs:
 
-- a recommendation to run `/do-wiki-ingest <local source path>`
+- a recommendation to run `/do-wiki-add <local source path or topic>`
 - a durable note in `log.md`
 - a concise mention in the lint report back to the user

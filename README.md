@@ -107,7 +107,8 @@ Once the skills are available, a typical flow looks like this:
 /do-amend plans/audit-logging-failed-sign-ins.md
 
 /do-wiki-build build a company research wiki for local source files
-/do-wiki-ingest raw/acme-q1-shareholder-letter.md
+/do-wiki-add raw/acme-q1-shareholder-letter.md
+/do-wiki-add decisions from today's architecture review
 /do-wiki-lint
 /do-wiki-query what changed in the latest quarter?
 ```
@@ -142,7 +143,7 @@ The wiki workflow assumes these defaults unless the workspace already has a stro
 | [do-amend](./skills/do-amend/) | A plan already exists, but requirements or scope changed | An impact analysis, then a safe update to the plan after approval, with optional durable wiki updates when warranted |
 | [do-wiki-build](./skills/do-wiki-build/) | You want a persistent markdown wiki scaffold for a topic, corpus, or research area | An Obsidian-friendly wiki structure with raw-source, schema, map-of-content, log, and note-graph conventions ready for future ingestion |
 | [do-wiki-align](./skills/do-wiki-align/) | You already have a wiki-like notes corpus and want it normalized to the repo conventions | A proposal-first retrofit pass that aligns structure, naming, hub notes, links, and relevant AGENTS/CLAUDE files to the Obsidian-friendly note graph model |
-| [do-wiki-ingest](./skills/do-wiki-ingest/) | You already have a wiki and want to compile a local source into it | Updated source, topic, entity, and concept notes plus backlink-aware graph expansion, refreshed `index.md`, and a log entry |
+| [do-wiki-add](./skills/do-wiki-add/) | You already have a wiki and want to add a local source or conversation context to it | Updated source, topic, entity, and concept notes (from a local file or conversation context) plus backlink-aware graph expansion, refreshed `index.md`, and a log entry |
 | [do-wiki-lint](./skills/do-wiki-lint/) | You want to health-check the wiki for contradictions, stale claims, unresolved wikilinks, or graph drift | A maintenance pass that applies safe graph fixes, updates the log, and calls out unresolved gaps |
 | [do-wiki-query](./skills/do-wiki-query/) | You want an answer grounded in the wiki, or a reusable synthesis filed back into it | A cited answer from the current wiki plus an optional linked analysis page, related-note updates, index refresh, and log entry when the result has durable value |
 
@@ -158,7 +159,7 @@ For knowledge-base workflows, a typical flow is:
 
 1. Run `/do-wiki-build <topic or corpus>` to scaffold the wiki.
 2. If you already have a wiki-like notes corpus, run `/do-wiki-align [root]` first instead of rebuilding from scratch.
-3. Run `/do-wiki-ingest <local source path>` repeatedly to compile sources into it.
+3. Run `/do-wiki-add <local source path or topic>` repeatedly to compile sources into it.
 4. Run `/do-wiki-lint` periodically to health-check the wiki and keep structure and synthesis aligned.
 5. Run `/do-wiki-query <question>` to answer from the wiki and optionally save durable analyses back into it.
 
@@ -184,8 +185,9 @@ If `plans/research/` or a wiki already exists, `/do-research`, `/do-plan`, `/do-
 /do-start plans/admin-orders-csv-export.md T3-T5
 
 /do-wiki-build build a competitor intelligence wiki
-/do-wiki-ingest raw/competitors/acme-launch-post.md
-/do-wiki-ingest raw/competitors/acme-q1-earnings.pdf
+/do-wiki-add raw/competitors/acme-launch-post.md
+/do-wiki-add raw/competitors/acme-q1-earnings.pdf
+/do-wiki-add why we chose SQLite over Postgres for caching
 /do-wiki-lint competitors
 /do-wiki-query how does acme's launch strategy differ from last quarter?
 
@@ -209,6 +211,7 @@ We now need the CSV export to include refunded orders too.
 - `raw/` and `wiki/` structures when you use the wiki-building workflow
 - Obsidian-style wiki notes with kebab-case filenames and `[[wikilinks]]`
 - optional durable wiki updates from research, planning, execution, and amendment workflows when a wiki already exists
+- conversation-sourced notes (marked with `Source type: conversation`) when using `/do-wiki-add` in chat-context mode
 - normalized hub notes, link styles, durable note identities, and leaner guidance-file pointers when you use the wiki-alignment workflow
 - appended `wiki/log.md` lint entries and wiki maintenance edits when you use the wiki-lint workflow
 - optional `wiki/analyses/` pages plus query log entries when you use the wiki-query workflow
@@ -236,7 +239,7 @@ After you start using the framework, you will typically have:
     │   └── SKILL.md
     ├── do-wiki-align/
     │   └── SKILL.md
-    ├── do-wiki-ingest/
+    ├── do-wiki-add/
     │   └── SKILL.md
     ├── do-wiki-lint/
     │   └── SKILL.md

@@ -155,7 +155,7 @@ After answering the question, output:
 
 ### Next useful command
 
-- `/do-wiki-ingest <local source path>` or `/do-wiki-lint [scope]`
+- `/do-wiki-add <local source path or topic>` or `/do-wiki-lint [scope]`
 ```
 
 If nothing was written back, say `none` under `Filed back into wiki`.

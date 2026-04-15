@@ -45,9 +45,9 @@
       "description": "Inspect and align an existing wiki-like markdown corpus, and in monorepos audit relevant AGENTS.md and CLAUDE.md files, to the repo's Obsidian-friendly note-graph conventions"
     },
     {
-      "name": "do-wiki-ingest",
-      "path": "skills/do-wiki-ingest/SKILL.md",
-      "description": "Ingest a local source file into an existing markdown wiki and expand the linked note graph"
+      "name": "do-wiki-add",
+      "path": "skills/do-wiki-add/SKILL.md",
+      "description": "Add a local source file or conversation context to an existing markdown wiki and expand the linked note graph"
     },
     {
       "name": "do-wiki-lint",

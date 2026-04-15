@@ -233,7 +233,7 @@ Wiki scaffold ready at <wiki root>
 
 ### Next step
 
-- `/do-wiki-ingest <local source path>`
+- `/do-wiki-add <local source path or topic>`
 ```
 
 If you found an existing wiki and only refined it, say so explicitly in the report.
@@ -251,5 +251,5 @@ If you found an existing wiki and only refined it, say so explicitly in the repo
 - Avoid creating isolated durable notes that are only visible from the file tree.
 - `<wiki root>/log.md` is append-only.
 - `<wiki root>/index.md` must be useful immediately after this skill runs.
-- Do not perform full source ingestion in this skill. That belongs to `/do-wiki-ingest`.
+- Do not perform full source ingestion in this skill. That belongs to `/do-wiki-add`.
 - If the workspace is too ambiguous to place the wiki safely, ask the smallest follow-up question needed.
