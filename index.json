@@ -55,6 +55,11 @@
       "description": "Run a wiki graph health check, apply safe maintenance fixes, and record unresolved findings"
     },
     {
+      "name": "do-wiki-amend",
+      "path": "skills/do-wiki-amend/SKILL.md",
+      "description": "Correct or update existing wiki content when a conversation reveals the wiki is wrong, stale, incomplete, or contradicted by new evidence. Use this when the agent discovers that the wiki says X but we now know Y, when a code change or real-world event invalidates a wiki claim, or when the user says the wiki is wrong about something"
+    },
+    {
       "name": "do-wiki-query",
       "path": "skills/do-wiki-query/SKILL.md",
       "description": "Answer questions from an existing markdown wiki and optionally file durable linked analyses back into it"
