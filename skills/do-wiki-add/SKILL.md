@@ -1,6 +1,6 @@
 ---
 name: do-wiki-add
-description: Read a local source file or synthesize from conversation context and integrate it into an existing Obsidian-friendly markdown wiki. Use this when the user wants to "add a source to the wiki", "add this document to the wiki", "save chat context to the wiki", "add this conversation to the wiki", or update the wiki from a local note, transcript, article, report, PDF, or the current discussion.
+description: Read a local source file or intentionally save conversation context as a conversation-sourced note, then integrate it into an existing Obsidian-friendly markdown wiki. Use this when the user wants to add a source to the wiki, add a document, ingest a local note, transcript, article, report, or PDF, or explicitly preserve the current conversation as a source note. Not for proposal-first session learnings that directly update existing pages; use /do-wiki-learnings.
 argument-hint: <local source path | topic or summary from chat>
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Edit
@@ -15,7 +15,9 @@ The target output is an Obsidian-friendly note graph:
 - small linked source, topic, entity, concept, and analysis notes
 - reciprocal backlinks where the relationship is materially useful
 
-This skill supports two modes: **file mode** (local file ingestion) and **chat-context mode** (synthesize from the current conversation). Do not fetch URLs directly in this skill.
+This skill supports two modes: **file mode** (local file ingestion) and **chat-context mode** (synthesize from the current conversation into a conversation-sourced note). Do not fetch URLs directly in this skill.
+
+If the user wants a **proposal-first review of session learnings** that directly updates existing pages without creating a conversation-source note, use `/do-wiki-learnings` instead.
 
 ## Input
 
@@ -72,11 +74,13 @@ Determine whether this run operates in **file mode** or **chat-context mode**.
 When running in chat-context mode:
 
 1. The "source" is the current conversation context — facts, decisions, technical findings, and open questions discussed so far.
-2. Read `${CLAUDE_SKILL_DIR}/references/chat-context-ingest.md` before proceeding to Step 2.
-3. Use `$ARGUMENTS` as the topic or summary title. Slugify it for the source page filename.
-4. On the source page, set `Source type: conversation` and record `Conversation date: YYYY-MM-DD`.
-5. Conversation-sourced content is inherently less verified than a curated file. Err toward explicit uncertainty. Mark claims as "discussed" or "agreed in conversation" rather than "confirmed."
-6. In the log entry, use the heading format `## [YYYY-MM-DD] add (chat) | <topic>` instead of `add (file)`.
+2. Use chat-context mode only when the goal is to intentionally preserve that conversation as a source-like note in the wiki.
+3. If the goal is instead to harvest durable session learnings directly into existing pages after a proposal step, stop and recommend `/do-wiki-learnings`.
+4. Read `${CLAUDE_SKILL_DIR}/references/chat-context-ingest.md` before proceeding to Step 2.
+5. Use `$ARGUMENTS` as the topic or summary title. Slugify it for the source page filename.
+6. On the source page, set `Source type: conversation` and record `Conversation date: YYYY-MM-DD`.
+7. Conversation-sourced content is inherently less verified than a curated file. Err toward explicit uncertainty. Mark claims as "discussed" or "agreed in conversation" rather than "confirmed."
+8. In the log entry, use the heading format `## [YYYY-MM-DD] add (chat) | <topic>` instead of `add (file)`.
 
 File mode proceeds exactly as before — no behavioral changes.
 

@@ -1,6 +1,6 @@
 ---
 name: do-wiki-query
-description: Answer a question against an existing Obsidian-friendly markdown wiki. Use this when the user wants to "query the wiki", "summarize what the knowledge base says", "compare topics from the wiki", or generate a reusable analysis grounded in existing wiki pages.
+description: Answer questions against an existing Obsidian-friendly markdown wiki. Use this whenever the user is asking what is happening in the project, directory, codebase, architecture, workflow, decisions, or current state and the wiki likely contains the answer, even if they do not explicitly mention the wiki. Also use it for summaries, comparisons, and reusable analyses grounded in current wiki pages. Not for surfacing unresolved gaps; use /do-wiki-review for that.
 argument-hint: <question>
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Edit

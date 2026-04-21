@@ -1,6 +1,6 @@
 ---
 name: do-wiki-lint
-description: Run a health check on an existing Obsidian-friendly markdown wiki. Use this when the user wants to "lint the wiki", "health-check the knowledge base", "find contradictions", "find orphan pages", or clean up stale claims and missing cross-references.
+description: Run a health check on an existing Obsidian-friendly markdown wiki. Use this when the user wants to lint the wiki, health-check the knowledge base, find orphan pages, spot broken or missing cross-links, or clean up stale claims and unresolved wikilinks with safe local fixes. Not for adding new material; use /do-wiki-add or /do-wiki-learnings for that.
 argument-hint: [wiki root or focus area]
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Edit

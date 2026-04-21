@@ -1,6 +1,6 @@
 ---
 name: do-wiki-review
-description: Surface and classify all open questions, unresolved contradictions, stale claims, and knowledge gaps from an existing wiki. Use this when the user wants to "see what's still open", "what needs attention", "what's unresolved", "review the wiki's gaps", "what do we still need to figure out", or "show me the open questions". Not for answering questions (use /do-wiki-query), fixing issues (use /do-wiki-lint or /do-wiki-amend), adding new sources (use /do-wiki-add), or scanning for structural problems (use /do-wiki-lint).
+description: Surface and classify all open questions, unresolved contradictions, stale claims, and knowledge gaps from an existing wiki. Use this when the user wants to see what's still open, what needs attention, what's unresolved, or what still needs research or ingest. Not for answering questions, fixing issues, or adding new material; use /do-wiki-query, /do-wiki-lint, /do-wiki-amend, /do-wiki-add, or /do-wiki-learnings.
 argument-hint: [wiki root or focus area]
 disable-model-invocation: true
 allowed-tools: Read Glob Grep AskUserQuestion

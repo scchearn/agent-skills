@@ -37,37 +37,42 @@
     {
       "name": "do-wiki-build",
       "path": "skills/do-wiki-build/SKILL.md",
-      "description": "Create or extend an Obsidian-friendly markdown wiki scaffold with kebab-case note graph conventions"
+      "description": "Create or extend an Obsidian-friendly markdown wiki in the current workspace. Use this when the user wants to build a wiki, set up a knowledge base, create a research vault, or scaffold a living markdown note graph before ingesting sources. Not for importing or normalizing an existing wiki-like corpus; use /do-wiki-align for that."
     },
     {
       "name": "do-wiki-align",
       "path": "skills/do-wiki-align/SKILL.md",
-      "description": "Inspect and align an existing wiki-like markdown corpus, and in monorepos audit relevant AGENTS.md and CLAUDE.md files, to the repo's Obsidian-friendly note-graph conventions"
+      "description": "Inspect an existing wiki-like markdown corpus and align it to this repo's Obsidian-friendly note-graph conventions. Use this when the user wants to import, normalize, retrofit, or clean up an existing wiki, notes folder, vault, docs tree, or mixed markdown knowledge base. In monorepos, also use it to align relevant AGENTS.md and CLAUDE.md files. Not for routine wiki maintenance; use /do-wiki-lint for that."
     },
     {
       "name": "do-wiki-add",
       "path": "skills/do-wiki-add/SKILL.md",
-      "description": "Add a local source file or conversation context to an existing markdown wiki and expand the linked note graph"
+      "description": "Read a local source file or intentionally save conversation context as a conversation-sourced note, then integrate it into an existing Obsidian-friendly markdown wiki. Use this when the user wants to add a source to the wiki, add a document, ingest a local note, transcript, article, report, or PDF, or explicitly preserve the current conversation as a source note. Not for proposal-first session learnings that directly update existing pages; use /do-wiki-learnings."
+    },
+    {
+      "name": "do-wiki-learnings",
+      "path": "skills/do-wiki-learnings/SKILL.md",
+      "description": "Review the current session for durable learnings that belong in an existing Obsidian-friendly markdown wiki. Use this when the conversation uncovered decisions, architecture facts, commands, conventions, gotchas, or open questions that future sessions should inherit, and you want a proposal-first report before editing the wiki. Not for source ingestion or correcting stale wiki claims; use /do-wiki-add or /do-wiki-amend."
     },
     {
       "name": "do-wiki-lint",
       "path": "skills/do-wiki-lint/SKILL.md",
-      "description": "Run a wiki graph health check, apply safe maintenance fixes, and record unresolved findings"
+      "description": "Run a health check on an existing Obsidian-friendly markdown wiki. Use this when the user wants to lint the wiki, health-check the knowledge base, find orphan pages, spot broken or missing cross-links, or clean up stale claims and unresolved wikilinks with safe local fixes. Not for adding new material; use /do-wiki-add or /do-wiki-learnings for that."
     },
     {
       "name": "do-wiki-amend",
       "path": "skills/do-wiki-amend/SKILL.md",
-      "description": "Correct or update existing wiki content when a conversation reveals the wiki is wrong, stale, incomplete, or contradicted by new evidence. Use this when the agent discovers that the wiki says X but we now know Y, when a code change or real-world event invalidates a wiki claim, or when the user says the wiki is wrong about something"
+      "description": "Correct or update existing wiki content when newer evidence shows the wiki is wrong, stale, incomplete, or contradicted. Use this when the agent discovers the wiki says X but we now know Y, when code or real-world changes invalidate a wiki claim, or when the user asks to fix or amend the wiki. Not for adding new sources, routine learnings capture, structural normalization, or health checks; use /do-wiki-add, /do-wiki-learnings, /do-wiki-align, or /do-wiki-lint."
     },
     {
       "name": "do-wiki-review",
       "path": "skills/do-wiki-review/SKILL.md",
-      "description": "Surface and classify all open questions, unresolved contradictions, stale claims, and knowledge gaps from an existing wiki. Use this when the user wants to see what's still open, what needs attention, what's unresolved, or to review the wiki's gaps"
+      "description": "Surface and classify all open questions, unresolved contradictions, stale claims, and knowledge gaps from an existing wiki. Use this when the user wants to see what's still open, what needs attention, what's unresolved, or what still needs research or ingest. Not for answering questions, fixing issues, or adding new material; use /do-wiki-query, /do-wiki-lint, /do-wiki-amend, /do-wiki-add, or /do-wiki-learnings."
     },
     {
       "name": "do-wiki-query",
       "path": "skills/do-wiki-query/SKILL.md",
-      "description": "Answer questions from an existing markdown wiki and optionally file durable linked analyses back into it"
+      "description": "Answer questions against an existing Obsidian-friendly markdown wiki. Use this whenever the user is asking what is happening in the project, directory, codebase, architecture, workflow, decisions, or current state and the wiki likely contains the answer, even if they do not explicitly mention the wiki. Also use it for summaries, comparisons, and reusable analyses grounded in current wiki pages. Not for surfacing unresolved gaps; use /do-wiki-review for that."
     },
     {
       "name": "setup-obsidian-vault",

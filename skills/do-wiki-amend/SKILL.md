@@ -1,6 +1,6 @@
 ---
 name: do-wiki-amend
-description: Correct or update existing wiki content when a conversation reveals the wiki is wrong, stale, incomplete, or contradicted by new evidence. Use this when the agent discovers that "the wiki says X but we now know Y", when a code change or real-world event invalidates a wiki claim, when a conversation surfaces facts that contradict or supersede existing wiki pages, or when the user says "fix the wiki", "update the wiki", "the wiki is wrong about", "that's no longer accurate", or "amend the wiki". Not for adding new sources (use /do-wiki-add), structural normalization (use /do-wiki-align), or health-checking links and conventions (use /do-wiki-lint).
+description: Correct or update existing wiki content when newer evidence shows the wiki is wrong, stale, incomplete, or contradicted. Use this when the agent discovers the wiki says X but we now know Y, when code or real-world changes invalidate a wiki claim, or when the user asks to fix or amend the wiki. Not for adding new sources, routine learnings capture, structural normalization, or health checks; use /do-wiki-add, /do-wiki-learnings, /do-wiki-align, or /do-wiki-lint.
 argument-hint: <what changed or what needs correcting>
 disable-model-invocation: true
 allowed-tools: Read Glob Grep Write Edit

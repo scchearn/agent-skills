@@ -1,6 +1,6 @@
 ---
 name: do-wiki-build
-description: Create or extend an Obsidian-friendly markdown wiki in the current workspace. Use this when the user wants to "build a wiki", "set up a knowledge base", "create a research vault", or scaffold a living markdown knowledge base before ingesting sources.
+description: Create or extend an Obsidian-friendly markdown wiki in the current workspace. Use this when the user wants to build a wiki, set up a knowledge base, create a research vault, or scaffold a living markdown note graph before ingesting sources. Not for importing or normalizing an existing wiki-like corpus; use /do-wiki-align for that.
 argument-hint: <topic, corpus, or wiki goal>
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Edit, AskUserQuestion, Skill
