@@ -60,9 +60,19 @@
       "description": "Correct or update existing wiki content when a conversation reveals the wiki is wrong, stale, incomplete, or contradicted by new evidence. Use this when the agent discovers that the wiki says X but we now know Y, when a code change or real-world event invalidates a wiki claim, or when the user says the wiki is wrong about something"
     },
     {
+      "name": "do-wiki-review",
+      "path": "skills/do-wiki-review/SKILL.md",
+      "description": "Surface and classify all open questions, unresolved contradictions, stale claims, and knowledge gaps from an existing wiki. Use this when the user wants to see what's still open, what needs attention, what's unresolved, or to review the wiki's gaps"
+    },
+    {
       "name": "do-wiki-query",
       "path": "skills/do-wiki-query/SKILL.md",
       "description": "Answer questions from an existing markdown wiki and optionally file durable linked analyses back into it"
+    },
+    {
+      "name": "setup-obsidian-vault",
+      "path": "skills/setup-obsidian-vault/SKILL.md",
+      "description": "Scaffold a new Obsidian vault with pre-configured settings, keymaps, and core plugins"
     }
   ]
 }

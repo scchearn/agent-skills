@@ -146,7 +146,9 @@ The wiki workflow assumes these defaults unless the workspace already has a stro
 | [do-wiki-add](./skills/do-wiki-add/) | You already have a wiki and want to add a local source or conversation context to it | Updated source, topic, entity, and concept notes (from a local file or conversation context) plus backlink-aware graph expansion, refreshed `index.md`, and a log entry |
 | [do-wiki-lint](./skills/do-wiki-lint/) | You want to health-check the wiki for contradictions, stale claims, unresolved wikilinks, or graph drift | A maintenance pass that applies safe graph fixes, updates the log, and calls out unresolved gaps |
 | [do-wiki-amend](./skills/do-wiki-amend/) | The agent discovers during a conversation that the wiki is wrong, stale, incomplete, or contradicted by new evidence — or the user says "the wiki is wrong about X" | A proposal-first corrective pass that corrects factual errors, marks superseded claims, completes incomplete pages, or surfaces contradictions — with history preservation for high-severity fixes |
+| [do-wiki-review](./skills/do-wiki-review/) | You want to see what's still open, unresolved, or needs attention in the wiki | A read-only report classifying all open questions, unresolved contradictions, stale claims, and knowledge gaps by urgency and topic — no edits, no new pages |
 | [do-wiki-query](./skills/do-wiki-query/) | You want an answer grounded in the wiki, or a reusable synthesis filed back into it | A cited answer from the current wiki plus an optional linked analysis page, related-note updates, index refresh, and log entry when the result has durable value |
+| [setup-obsidian-vault](./skills/setup-obsidian-vault/) | You want to scaffold a new Obsidian vault with your standard setup | A new vault directory with `.obsidian/` config, hotkeys, and standard folders (Journals, Templates, Attachments) — open in Obsidian and allow plugin installs |
 
 ## Recommended Workflow
 
@@ -164,6 +166,7 @@ For knowledge-base workflows, a typical flow is:
 4. Run `/do-wiki-lint` periodically to health-check the wiki and keep structure and synthesis aligned.
 5. Run `/do-wiki-amend <what changed>` when you discover the wiki is wrong, stale, incomplete, or contradicted by new evidence. The agent may also auto-trigger this skill during a conversation when it detects a mismatch between wiki content and current reality.
 6. Run `/do-wiki-query <question>` to answer from the wiki and optionally save durable analyses back into it.
+7. Run `/do-wiki-review [scope]` to surface all open questions, unresolved contradictions, and knowledge gaps classified by urgency and topic.
 
 If you only want to audit or trim `AGENTS.md` / `CLAUDE.md` files so they point to the wiki better, use:
 
@@ -193,6 +196,7 @@ If `plans/research/` or a wiki already exists, `/do-research`, `/do-plan`, `/do-
 /do-wiki-lint competitors
 /do-wiki-amend the API now uses Bearer tokens, not Basic auth
 /do-wiki-query how does acme's launch strategy differ from last quarter?
+/do-wiki-review
 
 /do-wiki-align docs/knowledge
 /do-wiki-align --guidance-only apps/api
@@ -219,6 +223,7 @@ We now need the CSV export to include refunded orders too.
 - normalized hub notes, link styles, durable note identities, and leaner guidance-file pointers when you use the wiki-alignment workflow
 - appended `wiki/log.md` lint entries and wiki maintenance edits when you use the wiki-lint workflow
 - optional `wiki/analyses/` pages plus query log entries when you use the wiki-query workflow
+- a read-only review report classifying open questions, unresolved contradictions, stale claims, and knowledge gaps by urgency (needs-research, needs-ingest, needs-decision, low-priority) and topic when you use `/do-wiki-review`
 
 This keeps research, planning, and execution state in the repository instead of burying it in chat history. Research notes live alongside plans, while `plans/INDEX.md` gives you one place to check overall plan progress.
 
@@ -251,8 +256,16 @@ After you start using the framework, you will typically have:
     │   └── SKILL.md
     ├── do-wiki-query/
     │   └── SKILL.md
-    └── do-start/
-        └── SKILL.md
+    ├── do-wiki-review/
+    │   └── SKILL.md
+    ├── do-start/
+    │   └── SKILL.md
+    └── setup-obsidian-vault/
+        ├── SKILL.md
+        ├── scripts/
+        │   └── setup.sh
+        └── assets/
+            └── obsidian/
 ```
 
 ## Naming Collisions

@@ -3,7 +3,7 @@ name: do-wiki-build
 description: Create or extend an Obsidian-friendly markdown wiki in the current workspace. Use this when the user wants to "build a wiki", "set up a knowledge base", "create a research vault", or scaffold a living markdown knowledge base before ingesting sources.
 argument-hint: <topic, corpus, or wiki goal>
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Write, Edit
+allowed-tools: Read, Glob, Grep, Write, Edit, AskUserQuestion, Skill
 ---
 
 You are a senior engineer and knowledge-base architect working in the current workspace. Your job is to instantiate the LLM Wiki pattern as a durable markdown artifact, not to ingest a full corpus yet.
@@ -212,7 +212,18 @@ Important boundaries:
 
 ---
 
-## Step 6 — Report back
+## Step 6 — Offer Obsidian vault setup
+
+After the scaffold is written, use `AskUserQuestion` to ask:
+
+> "Would you like to set up an Obsidian vault at the wiki root (`<wiki root>`) now? This will configure Obsidian settings, plugins, and standard folders."
+
+- If the user answers **yes**: invoke the `setup-obsidian-vault` skill with the wiki root path as the argument.
+- If the user answers **no**: proceed directly to Step 7.
+
+---
+
+## Step 7 — Report back
 
 After writing the scaffold, output:
 
