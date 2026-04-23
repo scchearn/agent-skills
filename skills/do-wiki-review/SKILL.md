@@ -27,7 +27,7 @@ Look for an existing wiki root by finding files such as:
 - `wiki/SCHEMA.md`
 - `wiki/index.md`
 - `wiki/log.md`
-- `wiki/overview.md`
+- `wiki/overview.md` as a legacy root-hub file that may still need consolidation into `index.md`
 
 If the workspace uses a different but clearly established wiki root, reuse it and treat it as `<wiki root>`.
 
@@ -52,7 +52,7 @@ Before scanning, read:
 1. `<wiki root>/SCHEMA.md`
 2. `<wiki root>/index.md`
 3. the most recent relevant parts of `<wiki root>/log.md`
-4. `<wiki root>/overview.md` when it exists
+4. `<wiki root>/overview.md` when it exists and may still contain legacy root-hub context not yet folded into `index.md`
 
 Use `Glob` and `Grep` to map the pages in scope before reading deeply.
 

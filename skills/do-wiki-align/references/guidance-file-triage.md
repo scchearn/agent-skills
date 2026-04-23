@@ -29,7 +29,7 @@ Typical examples:
 Good pattern:
 
 - keep the short operational rule in the guidance file
-- add a precise pointer to `index.md`, `overview.md`, or the most relevant scoped wiki note
+- add a precise pointer to `index.md` or the most relevant scoped wiki note
 
 ## Stale-check
 

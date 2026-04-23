@@ -1,12 +1,12 @@
 ---
 name: do-wiki-build
-description: Create or extend an Obsidian-friendly markdown wiki in the current workspace. Use this when the user wants to build a wiki, set up a knowledge base, create a research vault, or scaffold a living markdown note graph before ingesting sources. Not for importing or normalizing an existing wiki-like corpus; use /do-wiki-align for that.
+description: Create or extend an Obsidian-friendly markdown wiki scaffold in the current workspace. Use this when the user wants to build a wiki, set up a knowledge base, create a research vault, or scaffold a living markdown note graph before adding sources with `/do-wiki-add`. Not for importing or normalizing an existing wiki-like corpus; use /do-wiki-align for that.
 argument-hint: <topic, corpus, or wiki goal>
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Edit, AskUserQuestion, Skill
 ---
 
-You are a senior engineer and knowledge-base architect working in the current workspace. Your job is to instantiate the LLM Wiki pattern as a durable markdown artifact, not to ingest a full corpus yet.
+You are a senior engineer and knowledge-base architect working in the current workspace. Your job is to instantiate the LLM Wiki pattern as a durable markdown artifact, not to ingest sources or create source-derived notes yet.
 
 Follow the framework closely:
 
@@ -22,7 +22,7 @@ The target shape is an Obsidian-friendly note graph:
 - canonical kebab-case filenames for durable category notes such as `pricing-strategy.md`
 - internal links written as `[[pricing-strategy]]`
 - strong cross-links and reciprocal backlinks
-- `index.md` and `overview.md` acting as map-of-content hub notes, not just flat catalogs
+- `index.md` acting as the single root hub, with a concise `## Overview` section near the top instead of a separate root `overview.md`
 
 ## Input
 
@@ -39,6 +39,8 @@ Read the most relevant files you can find, including when present:
 1. Root guidance such as `CLAUDE.md`, `AGENTS.md`, `README.md`, or similar instructions
 2. Existing documentation or note directories such as `wiki/`, `knowledge/`, `vault/`, `notes/`, `docs/`, `research/`, `raw/`, or `sources/`
 3. Existing index or log files such as `index.md`, `log.md`, topic maps, or other wiki-like entry points
+
+Inspect structure first. Read raw-source or source-material files only enough to confirm paths, filenames, and layout. Do not summarize or synthesize their contents in this skill.
 
 Determine:
 
@@ -64,7 +66,6 @@ raw/
   assets/
 wiki/
   SCHEMA.md
-  overview.md
   index.md
   log.md
   sources/
@@ -78,13 +79,14 @@ Use these rules:
 
 1. `raw/` is for immutable source material. The wiki must never edit files there.
 2. `<wiki root>/` is the maintained markdown note graph.
-3. Durable category-note filenames are kebab-case, such as `pricing-strategy.md`, `market-expansion.md`, or `acme-q1-shareholder-letter.md`. Special root files like `index.md`, `overview.md`, `log.md`, and `SCHEMA.md` keep their fixed names.
+3. Durable category-note filenames are kebab-case, such as `pricing-strategy.md`, `market-expansion.md`, or `acme-q1-shareholder-letter.md`. Special root files like `index.md`, `log.md`, and `SCHEMA.md` keep their fixed names.
 4. Internal note links use `[[kebab-case-note-name]]`.
 5. Each durable concept, entity, topic, source, or analysis gets one canonical note. Prefer updating the existing note over creating synonyms.
-6. `<wiki root>/index.md` is the home map-of-content and content catalog.
-7. `<wiki root>/overview.md` is the top-level orientation page and high-level hub for the topic or corpus.
-8. `<wiki root>/log.md` is the append-only chronological record.
-9. `<wiki root>/SCHEMA.md` is the maintenance contract future sessions should follow.
+6. `<wiki root>/index.md` is the home map-of-content, content catalog, and top-level orientation page through a concise `## Overview` section near the top.
+7. `<wiki root>/log.md` is the append-only chronological record.
+8. `<wiki root>/SCHEMA.md` is the maintenance contract future sessions should follow.
+
+Do not create a separate root `overview.md`. If a legacy `overview.md` already exists, fold its useful root-level content into `index.md` instead of preserving both files.
 
 Only create category directories that are justified. The default set above is recommended, but if the workspace is clearly narrower, keep it smaller.
 
@@ -125,9 +127,9 @@ It must explain, in workspace-specific language:
 4. the canonical note classes and their filename patterns
 5. how pages should link to each other using `[[kebab-case-note-name]]`
 6. how reciprocal backlinks should be maintained
-7. how `index.md` and `overview.md` act as map-of-content hub notes
+7. how `index.md` acts as the single root hub with a concise `## Overview` section near the top
 8. how `index.md` and `log.md` must be maintained
-9. how ingest should work
+9. how `/do-wiki-add` should add sources and create source-derived notes
 10. how query outputs can be filed back into the wiki
 11. how non-wiki workflow skills like research, planning, execution, and plan amendment can consult the wiki and file durable findings back into it
 12. how lint or health-check passes should look
@@ -140,25 +142,19 @@ If there is an existing root guidance file such as `CLAUDE.md` or `AGENTS.md`, a
 
 Create or update these core files:
 
-- `<wiki root>/overview.md`
 - `<wiki root>/index.md`
 - `<wiki root>/log.md`
 
 Use the chosen wiki root instead of the literal `wiki/` path when the workspace already follows a different convention.
 
+If the workspace already has a legacy `<wiki root>/overview.md`, fold any still-useful scope, corpus, topic-map, or open-question content into `index.md` and remove the separate `overview.md` file.
+
 Requirements:
-
-#### `<wiki root>/overview.md`
-
-- State the wiki's scope and intended corpus.
-- Distinguish between confirmed current sources and expected future sources.
-- Capture a short starting map of major topic areas.
-- Use `[[kebab-case-note-name]]` links for major topics or starter notes that exist after the build.
-- Include open questions if the scope is still fuzzy.
 
 #### `<wiki root>/index.md`
 
-- Make it the home map-of-content for the wiki, not just a flat catalog.
+- Make it the single root hub for the wiki, not just a flat catalog.
+- Near the top, include a concise `## Overview` section that states the wiki's scope and intended corpus, distinguishes between confirmed current sources and expected future sources, captures a short starting map of major topic areas, uses `[[kebab-case-note-name]]` links for major topics or starter notes that already exist, and includes open questions if the scope is still fuzzy.
 - Group entries by page type or section such as overview, sources, topics, entities, concepts, and analyses.
 - Use `[[kebab-case-note-name]]` links wherever the linked note exists.
 - Give each listed page a one-line description.
@@ -182,20 +178,22 @@ Create any category directories needed by the chosen structure.
 
 Add starter pages only when they improve orientation. Prefer a minimal scaffold over lots of empty placeholders.
 
+You may create the `sources/` directory during build, but do not create source summary pages under it from raw files in this skill.
+
 When you create starter topic, entity, concept, or analysis notes:
 
 - use canonical kebab-case filenames
 - use human-readable H1 titles inside the files
 - add meaningful outbound `[[wikilinks]]`
-- avoid isolated files by linking each new note from `index.md`, `overview.md`, or another durable note
+- avoid isolated files by linking each new note from `index.md` or another durable note
 
 Examples of acceptable starter pages:
 
 - a topic map page if the wiki goal has clear subdomains
-- a source intake notes page if there is already a curated raw corpus
+- a source intake queue page if there is already a curated raw corpus, but only as a filename- or batch-level intake aid, not a summary of source contents
 - a short analyses page if the user explicitly asked for synthesis outputs
 
-Do not fabricate content that should come from later source ingestion.
+Do not fabricate content that should come from later `/do-wiki-add` runs.
 
 ---
 
@@ -206,6 +204,8 @@ This skill creates structure, not compiled knowledge.
 Important boundaries:
 
 - Do not ingest or summarize the entire corpus yet.
+- Do not create source summary pages under `<wiki root>/sources/` from raw or source-material files in this skill.
+- Do not create topic, entity, concept, or analysis notes by extracting claims from raw or source-material files during build. Only create structural starter pages justified by the user's stated goal or the existing wiki layout.
 - Do not treat random repo docs as canonical sources unless the user clearly wants them included in the wiki corpus.
 - If you mention likely future sources or themes, label them as expectations, candidates, or open questions.
 - If the workspace already has content that clearly belongs in the wiki, you may link to it or note it as a candidate source, but do not silently convert it into fully synthesized wiki knowledge in this step.
@@ -259,8 +259,9 @@ If you found an existing wiki and only refined it, say so explicitly in the repo
 - Raw-source files are immutable.
 - Internal links use `[[kebab-case-note-name]]`.
 - Durable category notes use canonical kebab-case filenames. Special root files keep their fixed names.
+- Keep root-level orientation in `index.md`; do not create a separate root `overview.md`.
 - Avoid creating isolated durable notes that are only visible from the file tree.
 - `<wiki root>/log.md` is append-only.
 - `<wiki root>/index.md` must be useful immediately after this skill runs.
-- Do not perform full source ingestion in this skill. That belongs to `/do-wiki-add`.
+- Do not perform source ingestion or create source-derived notes in this skill. That belongs to `/do-wiki-add`.
 - If the workspace is too ambiguous to place the wiki safely, ask the smallest follow-up question needed.

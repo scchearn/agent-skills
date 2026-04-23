@@ -41,7 +41,7 @@ After that, read the most relevant current workspace material you can find, incl
 
 ### Optional wiki context
 
-If the workspace contains a wiki root with files such as `SCHEMA.md`, `index.md`, `overview.md`, or `log.md`:
+If the workspace contains a wiki root with files such as `SCHEMA.md`, `index.md`, `log.md`, or a legacy root `overview.md`:
 
 1. Read the schema and main hub notes first
 2. Read only the wiki notes directly relevant to the feature area

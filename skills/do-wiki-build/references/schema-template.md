@@ -15,8 +15,7 @@ The wiki layer is stored in `<wiki path>`. Those files are maintained by the age
 ## Directory layout
 
 - `<raw path>` — immutable source documents
-- `<wiki path>/overview.md` — wiki scope and starting map
-- `<wiki path>/index.md` — page catalog with one-line summaries
+- `<wiki path>/index.md` — root hub with a concise `## Overview` section plus page catalog with one-line summaries
 - `<wiki path>/log.md` — append-only activity log
 - `<wiki path>/sources/<source-slug>.md` — source summary pages
 - `<wiki path>/topics/<topic-slug>.md` — topic synthesis pages
@@ -27,16 +26,17 @@ The wiki layer is stored in `<wiki path>`. Those files are maintained by the age
 ## Naming rules
 
 - Durable category-note filenames are kebab-case.
-- Special root files such as `index.md`, `overview.md`, `log.md`, and `SCHEMA.md` keep their fixed names.
+- Special root files such as `index.md`, `log.md`, and `SCHEMA.md` keep their fixed names.
 - Internal note links use `[[kebab-case-note-name]]`.
 - H1 titles can be human-readable.
 - One durable identity gets one canonical note. Do not create a second note for the same concept, entity, topic, source, or analysis when an appropriate canonical note already exists.
+- Keep root-level orientation inside `index.md`. A separate root `overview.md` is legacy drift and should be consolidated into `index.md` rather than recreated.
 
 ## Page types
 
 ### Source pages
 
-- One page per ingested source or source bundle.
+- One page per source added via `/do-wiki-add` or another explicitly approved source-add workflow.
 - Record source path, scope, summary, key facts, open questions, and important outbound links.
 - Link to relevant topic, entity, and concept notes using `[[wikilinks]]`.
 
@@ -73,7 +73,8 @@ The wiki layer is stored in `<wiki path>`. Those files are maintained by the age
 ## Index rules
 
 - `index.md` is the first file future sessions should read.
-- `index.md` is a map-of-content, not just a flat catalog.
+- `index.md` is the single root hub and a map-of-content, not just a flat catalog.
+- Near the top, `index.md` should contain a concise `## Overview` section covering the wiki's scope, intended corpus, confirmed current sources versus expected future sources, major topic areas, and any durable open questions worth surfacing.
 - Every durable page in the wiki should appear there with a one-line description.
 - Use `[[wikilinks]]` in grouped sections so the index acts as a hub note.
 - Keep entries grouped by section.
@@ -81,15 +82,16 @@ The wiki layer is stored in `<wiki path>`. Those files are maintained by the age
 ## Log rules
 
 - `log.md` is append-only.
-- Use parseable headings like `## [YYYY-MM-DD] ingest | Source Title`.
-- Record builds, ingests, query write-backs, lint passes, and durable write-backs from research, planning, execution, and amendment workflows.
+- Use parseable headings such as `## [YYYY-MM-DD] build | Initial wiki scaffold`, `## [YYYY-MM-DD] add (file) | <source title>`, and `## [YYYY-MM-DD] add (chat) | <topic>`.
+- Record builds, `/do-wiki-add` runs, query write-backs, lint passes, and durable write-backs from research, planning, execution, and amendment workflows.
 
-## Ingest rules
+## `/do-wiki-add` rules
 
+- Source-derived note creation belongs to `/do-wiki-add`, not `/do-wiki-build`.
 - Read the source first.
 - Update or create a source page.
 - Update impacted topic, entity, concept, and analysis pages.
-- Create missing canonical notes when a topic, entity, or concept is central to the ingest or repeated enough to justify reuse.
+- Create missing canonical notes when a topic, entity, or concept is central to the added source or repeated enough to justify reuse.
 - Ensure new and updated notes use `[[wikilinks]]` and reciprocal backlinks where appropriate.
 - Revise `index.md`.
 - Append a log entry.
@@ -117,6 +119,7 @@ The wiki layer is stored in `<wiki path>`. Those files are maintained by the age
 
 Periodically check for:
 
+- missing or stale `## Overview` content in `index.md`
 - unresolved `[[wikilinks]]`
 - orphan pages
 - notes with no meaningful outbound links
@@ -127,6 +130,7 @@ Periodically check for:
 - missing source links
 - missing reciprocal backlinks where the relationship is clearly material
 - outdated index entries
+- a legacy root `overview.md` that should be consolidated into `index.md`
 
 ## Non-negotiable rules
 

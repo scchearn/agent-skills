@@ -27,7 +27,7 @@ Locate the existing wiki by finding files such as:
 - `wiki/SCHEMA.md`
 - `wiki/index.md`
 - `wiki/log.md`
-- `wiki/overview.md`
+- `wiki/overview.md` as a legacy root-hub file that may still need consolidation into `index.md`
 
 If the workspace uses a different but clearly established wiki root, reuse it and treat it as `<wiki root>`.
 

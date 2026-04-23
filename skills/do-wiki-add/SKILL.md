@@ -47,7 +47,7 @@ Find the existing wiki by looking for files such as:
 - `wiki/SCHEMA.md`
 - `wiki/index.md`
 - `wiki/log.md`
-- `wiki/overview.md`
+- `wiki/overview.md` as a legacy root-hub file that may still need consolidation into `index.md`
 
 If the workspace uses a different but clearly established wiki root, reuse it.
 
@@ -167,7 +167,7 @@ Use these rules:
 4. If the new source contradicts an existing page, make the conflict explicit instead of silently replacing the older view.
 5. If the new source supersedes an old claim, say so clearly and point to both sources.
 6. When the source page links to a topic, entity, concept, or analysis note, update that note to link back under `Sources`, `Mentioned in`, or `Related pages` when the relationship is materially useful.
-7. Avoid isolated durable notes. Every new note should be reachable from `index.md`, `overview.md`, or another durable note, and should contain at least one meaningful outbound link.
+7. Avoid isolated durable notes. Every new note should be reachable from `index.md` or another durable note, and should contain at least one meaningful outbound link.
 
 When you create a new topic, entity, or concept note during the add, keep it small but structured. A good minimal shape is:
 

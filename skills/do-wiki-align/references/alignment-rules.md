@@ -5,11 +5,11 @@ Use this reference when normalizing an existing wiki-like corpus to the repo's t
 ## Target conventions
 
 - durable category-note filenames use kebab-case
-- special root files keep their fixed names: `index.md`, `overview.md`, `log.md`, and `SCHEMA.md`
+- special root files keep their fixed names: `index.md`, `log.md`, and `SCHEMA.md`
 - internal links use `[[kebab-case-note-name]]`
 - H1 titles can remain human-readable
-- `index.md` is a map-of-content hub note
-- `overview.md` is a high-level hub note
+- `index.md` is the single root hub and should begin with a concise `## Overview` section
+- a separate root `overview.md` is legacy drift that should be folded into `index.md` and removed when safe
 - source, topic, entity, concept, and analysis notes should cross-link and, when appropriate, link back to each other
 - relevant `AGENTS.md` / `CLAUDE.md` files stay lean operational entrypoints and point into the wiki for durable deep reference
 - mirror files that intentionally defer to `AGENTS.md` should stay thin unless the workspace clearly intends otherwise
@@ -37,12 +37,14 @@ Use this reference when normalizing an existing wiki-like corpus to the repo's t
 - `--guidance-only` is a hard scope restriction.
 - In that mode, the wiki is read-only context only.
 - Do not create, rename, move, or rewrite wiki notes.
-- Do not modify `SCHEMA.md`, `index.md`, `overview.md`, or `log.md` in that mode.
+- Do not modify `SCHEMA.md`, `index.md`, `log.md`, or any legacy root `overview.md` in that mode.
 - Only propose and apply edits to relevant `AGENTS.md` / `CLAUDE.md` files.
 
 ## Safe transformations
 
-- create missing `SCHEMA.md`, `index.md`, or `overview.md`
+- create missing `SCHEMA.md` or `index.md`
+- add or refresh a concise `## Overview` section in `index.md`
+- consolidate a legacy root `overview.md` into `index.md` and remove it when safe
 - normalize obvious durable note filenames to kebab-case
 - normalize obvious internal links to `[[wikilinks]]`
 - add missing reciprocal backlinks when the relationship is clearly material

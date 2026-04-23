@@ -124,10 +124,10 @@ If you already have an existing wiki-like notes corpus instead of starting from 
 The wiki workflow assumes these defaults unless the workspace already has a stronger established convention:
 
 - durable note filenames use kebab-case such as `pricing-strategy.md`
-- special root files keep their fixed names: `index.md`, `overview.md`, `log.md`, and `SCHEMA.md`
+- special root files keep their fixed names: `index.md`, `log.md`, and `SCHEMA.md`
 - internal links use `[[pricing-strategy]]`
 - H1 titles can remain human-readable, such as `# Pricing Strategy`
-- `index.md` and `overview.md` act as map-of-content hub notes
+- `index.md` acts as the single root hub and begins with a concise `## Overview` section
 - source, topic, entity, concept, and analysis notes should cross-link and, when appropriate, link back to each other
 - the goal is a graph of small reusable notes that is easy to traverse in Obsidian and easy for an LLM to inspect
 - `AGENTS.md` / `CLAUDE.md` files should stay lean operational entrypoints and point into the wiki for deep, fast-aging reference material
@@ -141,7 +141,7 @@ The wiki workflow assumes these defaults unless the workspace already has a stro
 | [do-plan](./skills/do-plan/) | You have a feature, bug fix, or task that should be broken into ordered steps | A plan file in `plans/` with concrete tasks, verification steps, links to any research it used, and optional durable wiki updates when warranted |
 | [do-start](./skills/do-start/) | You want the agent to execute the next unblocked task from a plan | Autonomous task execution with verification, plan updates, and optional durable wiki write-back |
 | [do-amend](./skills/do-amend/) | A plan already exists, but requirements or scope changed | An impact analysis, then a safe update to the plan after approval, with optional durable wiki updates when warranted |
-| [do-wiki-build](./skills/do-wiki-build/) | You want a persistent markdown wiki scaffold for a topic, corpus, or research area | An Obsidian-friendly wiki structure with raw-source, schema, map-of-content, log, and note-graph conventions ready for future ingestion |
+| [do-wiki-build](./skills/do-wiki-build/) | You want a persistent markdown wiki scaffold for a topic, corpus, or research area | An Obsidian-friendly wiki scaffold with raw-source, schema, map-of-content, and log conventions; source-derived notes are added later via `/do-wiki-add` |
 | [do-wiki-align](./skills/do-wiki-align/) | You already have a wiki-like notes corpus and want it normalized to the repo conventions | A proposal-first retrofit pass that aligns structure, naming, hub notes, links, and relevant AGENTS/CLAUDE files to the Obsidian-friendly note graph model |
 | [do-wiki-add](./skills/do-wiki-add/) | You already have a wiki and want to add a local source or intentionally save a conversation as a source note | Updated source, topic, entity, and concept notes (from a local file or conversation-sourced note) plus backlink-aware graph expansion, refreshed `index.md`, and a log entry |
 | [do-wiki-learnings](./skills/do-wiki-learnings/) | The current session uncovered durable facts, decisions, commands, conventions, or gotchas that should be preserved in the wiki | A proposal-first report of direct wiki updates from session learnings, followed by approved page edits, any justified new durable note, an `index.md` refresh when needed, and a `log.md` entry |

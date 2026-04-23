@@ -4,8 +4,11 @@ Use this checklist to health-check a markdown wiki without turning the pass into
 
 ## Structure
 
+- Does `index.md` contain a concise `## Overview` section near the top?
 - Are all durable pages represented in `index.md`?
 - Does `index.md` reference any missing pages?
+- Is a legacy root `overview.md` still present?
+- If `overview.md` exists, does it duplicate or conflict with the root-hub content already in `index.md`?
 - Are any durable notes violating the canonical kebab-case naming convention?
 - Are there obvious duplicate note identities under different filenames?
 - Are there duplicate or overlapping pages that should likely be consolidated later?
@@ -36,6 +39,9 @@ Use this checklist to health-check a markdown wiki without turning the pass into
 
 ## Safe fixes during lint
 
+- add or refresh a concise `## Overview` section in `index.md`
+- fold safe structural content from a legacy `overview.md` into `index.md`
+- delete a legacy `overview.md` after consolidation
 - repair index drift
 - resolve obvious broken wikilinks
 - add missing cross-links
@@ -50,5 +56,7 @@ Use this checklist to health-check a markdown wiki without turning the pass into
 - new source ingestion
 - speculative synthesis
 - broad refactors with weak evidence
+- copying a long legacy `overview.md` into `index.md` without compressing it
 - silent merges or renames of ambiguous duplicate notes
+- leaving a redundant `overview.md` behind after consolidation
 - deletion of meaningful disagreement

@@ -37,7 +37,7 @@
     {
       "name": "do-wiki-build",
       "path": "skills/do-wiki-build/SKILL.md",
-      "description": "Create or extend an Obsidian-friendly markdown wiki in the current workspace. Use this when the user wants to build a wiki, set up a knowledge base, create a research vault, or scaffold a living markdown note graph before ingesting sources. Not for importing or normalizing an existing wiki-like corpus; use /do-wiki-align for that."
+      "description": "Create or extend an Obsidian-friendly markdown wiki scaffold in the current workspace. Use this when the user wants to build a wiki, set up a knowledge base, create a research vault, or scaffold a living markdown note graph before adding sources with /do-wiki-add. Not for importing or normalizing an existing wiki-like corpus; use /do-wiki-align for that."
     },
     {
       "name": "do-wiki-align",

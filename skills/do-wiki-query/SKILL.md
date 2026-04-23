@@ -27,7 +27,7 @@ Look for a wiki root by finding files such as:
 - `wiki/SCHEMA.md`
 - `wiki/index.md`
 - `wiki/log.md`
-- `wiki/overview.md`
+- `wiki/overview.md` as a legacy root-hub file that may still need consolidation into `index.md`
 
 If the workspace uses a different but clearly established wiki root, reuse it and treat it as `<wiki root>`.
 
@@ -56,7 +56,7 @@ Before answering, read:
 
 1. `<wiki root>/SCHEMA.md`
 2. `<wiki root>/index.md`
-3. `<wiki root>/overview.md` when it exists
+3. `<wiki root>/overview.md` when it exists and may still contain legacy root-hub context not yet folded into `index.md`
 4. the most recent relevant parts of `<wiki root>/log.md` when freshness matters for the question
 5. `${CLAUDE_SKILL_DIR}/references/analysis-template.md`
 6. `${CLAUDE_SKILL_DIR}/references/writeback-criteria.md`
@@ -64,7 +64,7 @@ Before answering, read:
 Use `Grep` and `Glob` to shortlist relevant pages from the wiki. Prefer this workflow:
 
 1. derive 3-8 search terms from the question
-2. search `index.md`, `overview.md`, and the wiki directories for likely candidate pages
+2. search `index.md`, any legacy root `overview.md`, and the wiki directories for likely candidate pages
 3. read the most relevant pages first
 4. follow `[[wikilinks]]`, `Related pages`, `Sources`, or similar graph sections outward from the first relevant notes
 5. expand outward only if the current note neighborhood is insufficient

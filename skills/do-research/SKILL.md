@@ -36,7 +36,7 @@ Prefer primary sources over summaries. When external research matters, cite wher
 
 ### Optional wiki context
 
-If the workspace contains a wiki root with files such as `SCHEMA.md`, `index.md`, `overview.md`, or `log.md`, treat it as a high-signal memory layer:
+If the workspace contains a wiki root with files such as `SCHEMA.md`, `index.md`, `log.md`, or a legacy root `overview.md`, treat it as a high-signal memory layer:
 
 1. Read the schema and the main hub notes first
 2. Read only the notes directly relevant to the research topic

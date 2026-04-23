@@ -53,7 +53,7 @@ Look for files such as:
 - `wiki/SCHEMA.md`
 - `wiki/index.md`
 - `wiki/log.md`
-- `wiki/overview.md`
+- `wiki/overview.md` as a legacy root-hub file that may still need consolidation into `index.md`
 
 If the workspace uses a different but clearly established wiki root, reuse it.
 
@@ -67,7 +67,7 @@ Then resolve the scope for this learnings pass:
 
 1. If `$ARGUMENTS` names a topic, area, or page, use that as the primary focus.
 2. Otherwise derive the most relevant focus from the session itself.
-3. Use `index.md`, `overview.md`, and `Grep` to find the pages most directly related to those learnings.
+3. Use `index.md` and `Grep` to find the pages most directly related to those learnings. Consult a legacy root `overview.md` only when it still appears to contain unmigrated root-hub context.
 4. Do not propose edits to a page you have not read.
 
 ---
@@ -79,7 +79,7 @@ Before drafting any additions, read:
 1. `<wiki root>/SCHEMA.md`
 2. `<wiki root>/index.md`
 3. the most recent relevant parts of `<wiki root>/log.md`
-4. `<wiki root>/overview.md` when it exists
+4. `<wiki root>/overview.md` when it exists and may still contain legacy root-hub context not yet folded into `index.md`
 5. the existing pages directly related to the learnings you want to capture
 
 This step is mandatory. The goal is to update the existing note graph consistently, not improvise page-by-page.

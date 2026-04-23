@@ -34,7 +34,7 @@ Read the plan file in full, including the YAML front matter and all markdown sec
 
 ## Step 0.5 — Optional wiki context
 
-If the workspace contains a wiki root with files such as `SCHEMA.md`, `index.md`, `overview.md`, or `log.md`:
+If the workspace contains a wiki root with files such as `SCHEMA.md`, `index.md`, `log.md`, or a legacy root `overview.md`:
 
 1. Read the schema and the main hub notes first
 2. Read any relevant wiki notes already named in the task's `Files to read`

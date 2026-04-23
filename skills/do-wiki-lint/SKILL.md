@@ -1,6 +1,6 @@
 ---
 name: do-wiki-lint
-description: Run a health check on an existing Obsidian-friendly markdown wiki. Use this when the user wants to lint the wiki, health-check the knowledge base, find orphan pages, spot broken or missing cross-links, or clean up stale claims and unresolved wikilinks with safe local fixes. Not for adding new material; use /do-wiki-add or /do-wiki-learnings for that.
+description: Run a health check on an existing Obsidian-friendly markdown wiki. Use this when the user wants to lint the wiki, health-check the knowledge base, find orphan pages, spot broken or missing cross-links, clean up stale claims and unresolved wikilinks with safe local fixes, or consolidate a legacy root `overview.md` into `index.md`. Not for adding new material; use /do-wiki-add or /do-wiki-learnings for that.
 argument-hint: [wiki root or focus area]
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Edit
@@ -9,6 +9,8 @@ allowed-tools: Read, Glob, Grep, Write, Edit
 You are a senior engineer and wiki maintainer performing a structured health-check on a persistent markdown wiki. Your job is to improve wiki integrity without turning the lint pass into a full ingest or a speculative rewrite.
 
 The wiki is expected to behave like an Obsidian-friendly note graph, so lint should protect not just factual quality but also graph integrity.
+
+The preferred root-hub pattern is a single `index.md` with a concise `## Overview` section near the top. A separate root `overview.md` is a legacy pattern that lint should consolidate into `index.md` and remove.
 
 Use the LLM Wiki maintenance model:
 
@@ -37,7 +39,7 @@ Look for an existing wiki root by finding files such as:
 - `wiki/SCHEMA.md`
 - `wiki/index.md`
 - `wiki/log.md`
-- `wiki/overview.md`
+- `wiki/overview.md` as a legacy root-hub file that lint should migrate into `index.md`
 
 If the workspace uses a different but clearly established wiki root, reuse it and treat it as `<wiki root>`.
 
@@ -62,7 +64,7 @@ Before editing anything, read:
 1. `<wiki root>/SCHEMA.md`
 2. `<wiki root>/index.md`
 3. the most recent relevant parts of `<wiki root>/log.md`
-4. `<wiki root>/overview.md` when it exists
+4. `<wiki root>/overview.md` when it exists, so you can fold its useful root-hub content into `index.md` and remove it
 5. the files inside the lint scope that are most relevant to the current health check
 6. `${CLAUDE_SKILL_DIR}/references/lint-checklist.md`
 7. `${CLAUDE_SKILL_DIR}/references/finding-triage.md`
@@ -70,6 +72,8 @@ Before editing anything, read:
 Use `Glob` and `Grep` to map the pages in scope before reading deeply.
 
 This step is mandatory. The lint pass must follow the wiki's schema rather than impose a new one.
+
+Treat `index.md` as the authoritative root hub. The desired steady state is a single root-hub file: `index.md` with a concise `## Overview` section before the grouped page catalog.
 
 ---
 
@@ -81,6 +85,10 @@ Audit the wiki systematically. Look for both structural drift and knowledge-qual
 
 Check for:
 
+- `index.md` missing a concise `## Overview` section near the top
+- legacy `overview.md` still present at the wiki root
+- scope, corpus-boundary, major-topic, or open-question content stranded in `overview.md` instead of `index.md`
+- duplicated or conflicting root-hub content between `index.md` and `overview.md`
 - pages present on disk but missing from `index.md`
 - index entries pointing to pages that no longer exist
 - obvious duplicate note identities under different filenames
@@ -130,15 +138,26 @@ Distinguish clearly between:
 
 Make the smallest correct edits that improve the wiki's health.
 
+When a legacy `<wiki root>/overview.md` exists, migrate it during lint:
+
+1. extract the durable orientation content that still belongs at the root, such as scope, corpus boundaries, major topic links, and evidenced open questions
+2. fold or compress that material into a concise `## Overview` section near the top of `index.md`
+3. treat `index.md` as authoritative when the two files differ, preserving still-useful uncertainty or conflict notes briefly in `index.md` or `log.md`
+4. delete `<wiki root>/overview.md` before finishing the pass
+
 Allowed direct fixes include:
 
-1. updating `index.md` so it matches the actual durable pages
-2. resolving obvious broken `[[wikilinks]]` to the existing canonical note
-3. adding missing cross-links and reciprocal backlinks where the relationship is obvious from existing wiki content
-4. creating a minimal entity, concept, or topic page when it is strongly justified by repeated existing mentions
-5. adding a short contradiction note or stale-claim note to affected pages when the wiki already contains the evidence for the conflict
-6. improving obvious headings or one-line descriptions so the index becomes navigable again
-7. normalizing obvious internal links to the canonical `[[kebab-case-note-name]]` form
+1. updating `index.md` so it matches the actual durable pages and contains a concise `## Overview` section near the top
+2. consolidating safe structural content from a legacy `overview.md` into `index.md`
+3. deleting a legacy `overview.md` after its still-useful content has been preserved or reconciled in `index.md`
+4. resolving obvious broken `[[wikilinks]]` to the existing canonical note
+5. adding missing cross-links and reciprocal backlinks where the relationship is obvious from existing wiki content
+6. creating a minimal entity, concept, or topic page when it is strongly justified by repeated existing mentions
+7. adding a short contradiction note or stale-claim note to affected pages when the wiki already contains the evidence for the conflict
+8. improving obvious headings or one-line descriptions so the index becomes navigable again
+9. normalizing obvious internal links to the canonical `[[kebab-case-note-name]]` form
+
+When compressing a legacy `overview.md`, prefer concise structural bullets over copying long prose verbatim.
 
 Do not:
 
@@ -146,6 +165,7 @@ Do not:
 - invent facts to reconcile contradictions
 - silently merge or rename notes when the duplicate-identity question is non-trivial
 - silently delete important disagreement or uncertainty
+- leave a redundant root `overview.md` behind after its useful content has been consolidated into `index.md`
 - perform broad rewrites to pages that really need a new ingest pass instead
 - modify raw-source files
 
@@ -164,14 +184,15 @@ Append a new entry to `<wiki root>/log.md` using a parseable heading like:
 The entry should capture:
 
 - the lint scope
-- pages created or updated
+- pages created, updated, or removed
 - issues fixed directly
 - unresolved contradictions, stale claims, or gaps
+- legacy root-hub consolidation when applicable
 - suggested next ingests or follow-up questions when appropriate
 
 Keep `log.md` append-only.
 
-If the lint pass materially changes page discoverability, ensure `index.md` reflects the final state before you finish.
+If the lint pass materially changes page discoverability or consolidates a legacy `overview.md`, ensure `index.md` reflects the final state before you finish.
 
 ---
 
@@ -207,10 +228,12 @@ If the pass found no significant issues, say so explicitly and still note any re
 
 - Read the wiki schema before editing.
 - Prefer direct fixes for objective structural drift.
+- Maintain `index.md` as the single authoritative root hub with a concise `## Overview` section near the top.
 - Prefer canonical `[[kebab-case-note-name]]` links for durable internal references.
 - Preserve contradictions and uncertainty unless existing wiki evidence genuinely settles them.
 - Do not modify raw-source files.
 - Do not turn lint into source ingestion.
+- Treat a separate root `overview.md` as legacy drift. Consolidate its useful content into `index.md` and remove it during lint.
 - Update `<wiki root>/log.md` on every lint pass.
 - Keep the note graph traversable, not just the index accurate.
 - Keep `index.md` aligned with the durable pages that exist after the pass.

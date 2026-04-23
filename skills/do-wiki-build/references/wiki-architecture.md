@@ -8,7 +8,7 @@ The target output is an Obsidian-friendly note graph:
 - canonical kebab-case filenames for durable category notes
 - `[[wikilinks]]` between durable notes
 - backlinks and reciprocal relationships that make graph traversal useful
-- `index.md` and `overview.md` as hub notes for both humans and LLMs
+- `index.md` as the single root hub for both humans and LLMs, with a concise `## Overview` section near the top
 
 ## Core layers
 
@@ -28,17 +28,18 @@ The target output is an Obsidian-friendly note graph:
 ### Schema
 
 - The operating contract for future sessions.
-- It defines page types, naming rules, linking rules, ingest behavior, and maintenance expectations.
+- It defines page types, naming rules, linking rules, how `/do-wiki-add` extends the wiki, and maintenance expectations.
 - Without this layer, each future session has to rediscover how the wiki is supposed to work.
 
 ## Note identity and linking
 
 - Use one canonical note per durable source, topic, entity, concept, or analysis.
-- Durable category-note filenames should be kebab-case, such as `pricing-strategy.md`. Special root files like `index.md`, `overview.md`, `log.md`, and `SCHEMA.md` keep their fixed names.
+- Durable category-note filenames should be kebab-case, such as `pricing-strategy.md`. Special root files like `index.md`, `log.md`, and `SCHEMA.md` keep their fixed names.
 - Internal note links should use `[[pricing-strategy]]`.
 - H1 headings can remain human-readable, such as `# Pricing Strategy`.
 - When a note becomes important enough to reuse, give it a real note instead of repeating the same explanation across many files.
 - Prefer reciprocal links for meaningful relationships, especially between source notes and the topic/entity/concept notes they materially inform.
+- Keep root-level orientation in `index.md` instead of creating a separate root `overview.md`.
 
 ## Default scaffold
 
@@ -50,7 +51,6 @@ raw/
   assets/
 wiki/
   SCHEMA.md
-  overview.md
   index.md
   log.md
   sources/
@@ -62,39 +62,36 @@ wiki/
 
 ## Special files
 
-### `overview.md`
-
-- top-level orientation page
-- wiki scope and intended corpus
-- current state and open questions
-- starting topic map
-- wikilink hub for the major areas of the graph
-
 ### `index.md`
 
-- home map-of-content and content-oriented catalog
+- home map-of-content, content-oriented catalog, and top-level orientation page
+- begin with a concise `## Overview` section covering wiki scope and intended corpus, current state and open questions, and a starting topic map with `[[wikilinks]]` when those notes exist
 - each page should have a link and one-line description
 - organize by section so future sessions can quickly identify relevant pages
-- keep this current on every ingest
+- keep this current on every `/do-wiki-add` run and any other durable write-back that changes discoverability
 - do not rely on it as the only navigation layer; the note graph should still be traversable from the notes themselves
+
+A separate root `overview.md` is legacy drift. If one exists, fold its still-useful root-level content into `index.md` and remove it.
 
 ### `log.md`
 
 - chronological, append-only history
-- record scaffold creation, ingests, query write-backs, and lint passes
+- record scaffold creation, `/do-wiki-add` runs, query write-backs, and lint passes
 - parseable headings make this searchable with simple tools later
 
-Recommended heading format:
+Recommended heading formats:
 
 ```md
-## [2026-04-09] ingest | Source Title
+## [2026-04-09] build | Initial wiki scaffold
+## [2026-04-10] add (file) | Source Title
+## [2026-04-10] add (chat) | Topic
 ```
 
 ## Page categories
 
 These are common categories, not mandatory ones:
 
-- `sources/` — one page per ingested source or source bundle
+- `sources/` — one page per source added via `/do-wiki-add` or another explicit source-add workflow
 - `topics/` — broader subjects or themes that synthesize across sources
 - `entities/` — people, companies, products, places, projects, or systems
 - `concepts/` — ideas, methods, claims, frameworks, recurring patterns
@@ -111,7 +108,7 @@ Each note in these categories should use a canonical kebab-case filename and par
 - Make contradictions explicit.
 - Separate confirmed facts from open questions.
 - Do not over-scaffold with placeholder files.
-- Keep starter content structural rather than synthetic when sources have not been ingested yet.
+- Keep starter content structural rather than synthetic when sources have not been added yet.
 - Avoid isolated notes: new durable notes should be reachable from a hub note or a closely related note.
 
 ## Build-skill boundary
@@ -123,11 +120,12 @@ During build:
 - define the raw-source location
 - define the wiki structure
 - define the schema
-- initialize `index.md` and `log.md`
+- initialize `index.md` with a concise `## Overview` section and `log.md`
 - establish the canonical link and filename rules
 - create only the starter pages required for orientation
+- do not create source-summary pages or other source-derived notes from raw files
 
-During ingest:
+During `/do-wiki-add`:
 
 - read one or more new sources
 - update source pages and topic/entity/concept pages

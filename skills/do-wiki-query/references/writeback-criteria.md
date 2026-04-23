@@ -18,7 +18,7 @@ Typical destinations:
 
 - `<wiki root>/analyses/` for a new analysis page
 - an existing topic, concept, or entity page when the answer obviously belongs there
-- a hub note such as `overview.md` or `index.md` when the analysis materially improves navigation
+- a hub note such as `index.md` when the analysis materially improves navigation
 
 ## Maybe write back
 

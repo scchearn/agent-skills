@@ -18,7 +18,7 @@ The target output is:
 - an Obsidian-friendly note graph
 - durable category notes with canonical kebab-case filenames
 - internal links written as `[[kebab-case-note-name]]`
-- `index.md` and `overview.md` functioning as hub notes
+- `index.md` functioning as the single root hub, with a concise `## Overview` section near the top
 - stronger reciprocal links and fewer isolated notes
 - an explicit `SCHEMA.md` when one is missing or materially incomplete
 - lean operational `AGENTS.md` / `CLAUDE.md` files that point into the wiki for durable deep reference instead of duplicating long, fast-aging technical knowledge
@@ -59,7 +59,7 @@ In `--guidance-only` mode:
 - do not rename or move wiki notes
 - do not normalize links across the whole wiki corpus
 - do not restructure category directories
-- do not create, update, or append any wiki file, including `SCHEMA.md`, `index.md`, `overview.md`, or `log.md`
+- do not create, update, or append any wiki file, including `SCHEMA.md`, `index.md`, `log.md`, or any legacy root `overview.md`
 
 ---
 
@@ -69,7 +69,7 @@ Locate the most plausible wiki-like root by checking for signals such as:
 
 - `SCHEMA.md`
 - `index.md`
-- `overview.md`
+- `overview.md` as a legacy root-hub signal
 - `log.md`
 - dense markdown trees under directories like `wiki/`, `knowledge/`, `vault/`, `notes/`, `docs/`, or `research/`
 - existing source, topic, concept, entity, or analysis note clusters
@@ -109,7 +109,7 @@ Before proposing changes, read:
 3. `${CLAUDE_SKILL_DIR}/references/guidance-file-triage.md`
 4. `<wiki root>/SCHEMA.md` when it exists
 5. `<wiki root>/index.md` when it exists
-6. `<wiki root>/overview.md` when it exists
+6. `<wiki root>/overview.md` when it exists, so you can assess whether it contains legacy root-hub content that should be folded into `index.md`
 7. `<wiki root>/log.md` when it exists
 8. the relevant `AGENTS.md` / `CLAUDE.md` files for the resolved scope
 9. a representative sample of notes from the target scope
@@ -151,7 +151,7 @@ Important proposal requirements:
 1. Call out every file you expect to create or update.
 2. Call out every file you expect to rename or move.
 3. Call out any ambiguous duplicates you will not merge automatically.
-4. State whether `SCHEMA.md`, `index.md`, or `overview.md` need creation or major revision.
+4. State whether `SCHEMA.md` or `index.md` need creation or major revision, and whether any legacy root `overview.md` should be consolidated and removed.
 5. State whether link-style normalization will be partial or broad.
 6. Call out the guidance files you expect to update.
 7. Call out any guidance sections you expect to shorten and replace with wiki pointers.
@@ -174,18 +174,19 @@ Once the user confirms, apply the smallest safe set of changes needed to align t
 Safe full-alignment work includes:
 
 1. creating or updating `<wiki root>/SCHEMA.md`
-2. creating or updating `<wiki root>/index.md` and `<wiki root>/overview.md` as hub notes
-3. normalizing obvious durable category-note filenames to kebab-case
-4. normalizing obvious internal links to `[[kebab-case-note-name]]`
-5. updating inbound references when filenames change
-6. adding reciprocal backlinks where the relationship is clearly material
-7. creating missing category directories when the current scope clearly benefits from them
-8. moving notes into clearer category locations when the destination is obvious and safe
-9. auditing and updating relevant `AGENTS.md` / `CLAUDE.md` files so they point to the wiki and keep operational guidance concise
-10. shortening duplicated deep-reference sections in guidance files into concise wiki pointers when the durable detail already belongs in the wiki
-11. correcting clearly stale guidance after verifying against current repo state, guidance scope, and the wiki
-12. keeping mirror files thin when they intentionally defer to a canonical guidance file
-13. appending a parseable entry to `<wiki root>/log.md` like:
+2. creating or updating `<wiki root>/index.md` as the single root hub with a concise `## Overview` section near the top
+3. consolidating a legacy root `<wiki root>/overview.md` into `index.md` and removing it when safe
+4. normalizing obvious durable category-note filenames to kebab-case
+5. normalizing obvious internal links to `[[kebab-case-note-name]]`
+6. updating inbound references when filenames change
+7. adding reciprocal backlinks where the relationship is clearly material
+8. creating missing category directories when the current scope clearly benefits from them
+9. moving notes into clearer category locations when the destination is obvious and safe
+10. auditing and updating relevant `AGENTS.md` / `CLAUDE.md` files so they point to the wiki and keep operational guidance concise
+11. shortening duplicated deep-reference sections in guidance files into concise wiki pointers when the durable detail already belongs in the wiki
+12. correcting clearly stale guidance after verifying against current repo state, guidance scope, and the wiki
+13. keeping mirror files thin when they intentionally defer to a canonical guidance file
+14. appending a parseable entry to `<wiki root>/log.md` like:
 
 ```md
 ## [YYYY-MM-DD] alignment | <scope>
