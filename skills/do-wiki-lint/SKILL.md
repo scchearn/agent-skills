@@ -3,7 +3,7 @@ name: do-wiki-lint
 description: Run a health check on an existing Obsidian-friendly markdown wiki. Use this when the user wants to lint the wiki, health-check the knowledge base, find orphan pages, spot broken or missing cross-links, clean up stale claims and unresolved wikilinks with safe local fixes, or consolidate a legacy root `overview.md` into `index.md`. Not for adding new material; use /do-wiki-add or /do-wiki-learnings for that.
 argument-hint: [wiki root or focus area]
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Write, Edit
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash
 ---
 
 You are a senior engineer and wiki maintainer performing a structured health-check on a persistent markdown wiki. Your job is to improve wiki integrity without turning the lint pass into a full ingest or a speculative rewrite.
@@ -30,9 +30,9 @@ If no explicit target is provided, lint the whole wiki.
 
 ---
 
-## Step 1 — Resolve the wiki and lint scope
+## Step 1 — Resolve wiki, read contract & audit
 
-Locate the target wiki first.
+### Locate the wiki
 
 Look for an existing wiki root by finding files such as:
 
@@ -43,11 +43,7 @@ Look for an existing wiki root by finding files such as:
 
 If the workspace uses a different but clearly established wiki root, reuse it and treat it as `<wiki root>`.
 
-Then resolve the lint scope:
-
-1. If the user named a wiki root or subdirectory explicitly, use that.
-2. If the user named a topic, source, concept, or entity, lint that area plus closely related pages.
-3. If the user gave no scope, lint the whole wiki.
+Then resolve the lint scope: if the user named a wiki root, subdirectory, topic, or entity, use that. If no scope given, lint the whole wiki.
 
 If no wiki exists yet, stop and recommend:
 
@@ -55,150 +51,104 @@ If no wiki exists yet, stop and recommend:
 /do-wiki-build <topic or wiki goal>
 ```
 
----
+### Read the wiki contract
 
-## Step 2 — Read the wiki contract and current map
-
-Before editing anything, read:
+Before editing, read:
 
 1. `<wiki root>/SCHEMA.md`
 2. `<wiki root>/index.md`
 3. the most recent relevant parts of `<wiki root>/log.md`
 4. `<wiki root>/overview.md` when it exists, so you can fold its useful root-hub content into `index.md` and remove it
-5. the files inside the lint scope that are most relevant to the current health check
+5. the files inside the lint scope most relevant to the current health check
 6. `${CLAUDE_SKILL_DIR}/references/lint-checklist.md`
 7. `${CLAUDE_SKILL_DIR}/references/finding-triage.md`
 
 Use `Glob` and `Grep` to map the pages in scope before reading deeply.
 
-This step is mandatory. The lint pass must follow the wiki's schema rather than impose a new one.
-
 Treat `index.md` as the authoritative root hub. The desired steady state is a single root-hub file: `index.md` with a concise `## Overview` section before the grouped page catalog.
 
----
+### Check qmd readiness (secondary only)
 
-## Step 3 — Audit for health issues
+1. Glob for `.wiki-metadata.json`. If found, **read it immediately**. If `retrieval.status` is `"ready"`, qmd is ready — use `retrieval.collection_name`. Do not run fallback checks.
+2. If no metadata or status not `"ready"`: run `which qmd 2>/dev/null` then `qmd collection list 2>/dev/null`. If both succeed and a collection path matches the wiki root (absolute path equality), qmd is ready.
+3. If qmd is still not ready: qmd not available, use Grep/Glob only.
+4. Runtime guard: if any qmd command fails or returns stale results, treat as degraded — fall back to Grep/Glob.
 
-Audit the wiki systematically. Look for both structural drift and knowledge-quality drift.
+qmd is **secondary only** in this skill: use it only to find related-note neighborhoods when a structural fix might need reciprocal links or nearby canonical notes. If ready, read `${CLAUDE_SKILL_DIR}/references/qmd-usage.md`.
 
-### A. Structure and inventory
+### Audit for health issues
 
-Check for:
+**A. Structure and inventory** — Check for: `index.md` missing `## Overview` section; legacy `overview.md` still present; content stranded in `overview.md` instead of `index.md`; duplicated root-hub content; pages on disk but missing from index; index entries pointing to non-existent pages; duplicate note identities; filename convention drift; near-duplicate pages; empty or placeholder pages.
 
-- `index.md` missing a concise `## Overview` section near the top
-- legacy `overview.md` still present at the wiki root
-- scope, corpus-boundary, major-topic, or open-question content stranded in `overview.md` instead of `index.md`
-- duplicated or conflicting root-hub content between `index.md` and `overview.md`
-- pages present on disk but missing from `index.md`
-- index entries pointing to pages that no longer exist
-- obvious duplicate note identities under different filenames
-- durable category notes whose filenames drift from the wiki's canonical kebab-case convention
-- obviously duplicated source pages or near-duplicate topic pages
-- empty or placeholder pages that should either be improved or clearly marked as thin
+**B. Link health** — Check for: unresolved `[[wikilinks]]`; orphan pages; pages with no meaningful inbound or outbound links; pages only discoverable from `index.md`; pages that should link but don't; missing reciprocal backlinks; repeated entity/concept mentions without a dedicated page.
 
-### B. Link health
+**C. Knowledge integrity** — Check for: contradictory statements; stale claims superseded by later ingests; broad synthesis pages out of date; under-sourced claims.
 
-Check for:
+**D. Maintenance signals** — Check for: recent ingests not in index; lint-worthy gaps never reconciled in log; missing follow-up notes.
 
-- unresolved `[[wikilinks]]`
-- orphan pages with no meaningful inbound or outbound links
-- pages with no meaningful inbound links
-- pages with no meaningful outbound links
-- pages that are only discoverable from `index.md` but not from the surrounding note graph
-- pages that should clearly link to each other but do not
-- source pages that link to entity, topic, or concept notes without reciprocal backlinks where the relationship is clearly material
-- repeated mentions of the same entity or concept across multiple pages without a dedicated page when one would be useful
+**E. Obsidian vault placement** — Check whether `<wiki root>/.obsidian/` exists. The desired layout is an Obsidian vault at the project/workspace root that contains the wiki, not a vault nested inside `wiki/`, unless `<wiki root>` is itself the project/workspace root.
 
-### C. Knowledge integrity
+Distinguish: **fix now** (safe from existing wiki evidence) vs **annotate now** (mark but don't resolve) vs **follow-up** (needs future evidence/research/user direction).
 
-Check for:
-
-- contradictory statements across pages
-- stale claims that later ingests may have superseded
-- broad synthesis pages that no longer reflect the current source set
-- claims that look under-sourced relative to the schema and surrounding wiki conventions
-
-### D. Maintenance signals
-
-Check for:
-
-- recent ingests not reflected in the index or related pages
-- lint-worthy gaps called out in the log but never reconciled
-- missing follow-up notes where contradictions or uncertainty were previously discovered
-
-Distinguish clearly between:
-
-- **fix now** issues that can be corrected safely from existing wiki evidence
-- **annotate now** issues that should be marked but not resolved without new evidence
-- **follow-up** issues that require future ingestion, research, or user direction
+**Expand with qmd (secondary, if ready)**: Follow `references/qmd-usage.md` to find related-note neighborhoods for orphan pages or missing cross-links.
 
 ---
 
-## Step 4 — Apply safe fixes only
+## Step 2 — Apply safe fixes, record & refresh
 
-Make the smallest correct edits that improve the wiki's health.
+### Apply safe fixes
 
-When a legacy `<wiki root>/overview.md` exists, migrate it during lint:
+Make the smallest correct edits that improve wiki health.
 
-1. extract the durable orientation content that still belongs at the root, such as scope, corpus boundaries, major topic links, and evidenced open questions
-2. fold or compress that material into a concise `## Overview` section near the top of `index.md`
-3. treat `index.md` as authoritative when the two files differ, preserving still-useful uncertainty or conflict notes briefly in `index.md` or `log.md`
-4. delete `<wiki root>/overview.md` before finishing the pass
+When a legacy `<wiki root>/overview.md` exists:
 
-Allowed direct fixes include:
+1. extract durable orientation content (scope, corpus boundaries, major topic links, evidenced open questions)
+2. fold or compress into a concise `## Overview` section near the top of `index.md`
+3. treat `index.md` as authoritative when the two files differ
+4. delete `overview.md` before finishing the pass
 
-1. updating `index.md` so it matches the actual durable pages and contains a concise `## Overview` section near the top
-2. consolidating safe structural content from a legacy `overview.md` into `index.md`
-3. deleting a legacy `overview.md` after its still-useful content has been preserved or reconciled in `index.md`
-4. resolving obvious broken `[[wikilinks]]` to the existing canonical note
-5. adding missing cross-links and reciprocal backlinks where the relationship is obvious from existing wiki content
-6. creating a minimal entity, concept, or topic page when it is strongly justified by repeated existing mentions
-7. adding a short contradiction note or stale-claim note to affected pages when the wiki already contains the evidence for the conflict
-8. improving obvious headings or one-line descriptions so the index becomes navigable again
-9. normalizing obvious internal links to the canonical `[[kebab-case-note-name]]` form
+When `<wiki root>/.obsidian/` exists and `<wiki root>` is a subdirectory of the project/workspace root:
 
-When compressing a legacy `overview.md`, prefer concise structural bullets over copying long prose verbatim.
+1. resolve `<obsidian vault root>` as the parent directory that contains `<wiki root>`
+2. if `<obsidian vault root>/.obsidian/` does not exist, move `<wiki root>/.obsidian/` to `<obsidian vault root>/.obsidian/`
+3. if `<obsidian vault root>/.obsidian/` already exists, do not overwrite or merge it; report the nested vault as unresolved and explain that manual reconciliation is needed
+4. if Obsidian's global vault registry is available at `$HOME/.config/obsidian/obsidian.json` or `$HOME/Library/Application Support/obsidian/obsidian.json`, update entries that point exactly at `<wiki root>` to point at `<obsidian vault root>` after a successful move
+5. record the vault-placement fix in `<wiki root>/log.md` because the wiki path remains unchanged
 
-Do not:
+Allowed direct fixes:
 
-- ingest new raw sources during lint
-- invent facts to reconcile contradictions
-- silently merge or rename notes when the duplicate-identity question is non-trivial
-- silently delete important disagreement or uncertainty
-- leave a redundant root `overview.md` behind after its useful content has been consolidated into `index.md`
-- perform broad rewrites to pages that really need a new ingest pass instead
-- modify raw-source files
+1. updating `index.md` to match actual durable pages with `## Overview`
+2. consolidating safe structural content from legacy `overview.md` into `index.md`
+3. deleting legacy `overview.md` after useful content preserved
+4. resolving obvious broken `[[wikilinks]]`
+5. adding missing cross-links and reciprocal backlinks
+6. creating minimal entity/concept/topic pages when strongly justified
+7. adding contradiction or stale-claim notes when wiki already contains the evidence
+8. improving headings or descriptions for index navigability
+9. normalizing internal links to canonical `[[kebab-case-note-name]]` form
+10. moving a misplaced nested `<wiki root>/.obsidian/` directory to the project/workspace root when the destination has no `.obsidian/` directory
 
-If a finding depends on missing evidence, leave the wiki more honest, not more certain.
+Do not: ingest new raw sources, invent facts, silently merge/rename notes, silently delete disagreement/uncertainty, leave redundant `overview.md`, overwrite or merge an existing project-root `.obsidian/`, perform broad rewrites, or modify raw-source files.
 
----
+### Record the lint pass
 
-## Step 5 — Record the lint pass
-
-Append a new entry to `<wiki root>/log.md` using a parseable heading like:
+Append to `<wiki root>/log.md`:
 
 ```md
 ## [YYYY-MM-DD] lint | <scope>
 ```
 
-The entry should capture:
+Capture: scope, pages created/updated/removed, issues fixed, unresolved contradictions/gaps, legacy root-hub consolidation, Obsidian vault placement fixes or unresolved conflicts, suggested next ingests.
 
-- the lint scope
-- pages created, updated, or removed
-- issues fixed directly
-- unresolved contradictions, stale claims, or gaps
-- legacy root-hub consolidation when applicable
-- suggested next ingests or follow-up questions when appropriate
+Keep `log.md` append-only. Ensure `index.md` reflects the final state before finishing.
 
-Keep `log.md` append-only.
+### Refresh qmd after writes
 
-If the lint pass materially changes page discoverability or consolidates a legacy `overview.md`, ensure `index.md` reflects the final state before you finish.
+If qmd was ready and you wrote to the wiki, run `qmd update -c <collection> 2>/dev/null`. If refresh fails, report it but do not roll back wiki edits.
 
 ---
 
-## Step 6 — Report back
-
-After completing the lint pass, output:
+## Step 3 — Report back
 
 ```md
 Wiki lint completed for <scope>
@@ -233,7 +183,11 @@ If the pass found no significant issues, say so explicitly and still note any re
 - Preserve contradictions and uncertainty unless existing wiki evidence genuinely settles them.
 - Do not modify raw-source files.
 - Do not turn lint into source ingestion.
-- Treat a separate root `overview.md` as legacy drift. Consolidate its useful content into `index.md` and remove it during lint.
+- Treat a separate root `overview.md` as legacy drift. Consolidate into `index.md` and remove during lint.
+- Treat `<wiki root>/.obsidian/` as misplaced vault config when `<wiki root>` is a subdirectory. Move it to the project/workspace root only when that destination has no `.obsidian/` directory.
 - Update `<wiki root>/log.md` on every lint pass.
 - Keep the note graph traversable, not just the index accurate.
 - Keep `index.md` aligned with the durable pages that exist after the pass.
+- qmd is secondary. Structural checks remain Glob- and Grep-led. Use qmd only to find related-note neighborhoods.
+- After wiki edits, refresh qmd if the collection is ready. If refresh fails, report it but do not roll back.
+- If qmd is unavailable, unmapped, or degraded, continue without it. The skill must not fail.

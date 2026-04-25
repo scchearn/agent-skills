@@ -3,7 +3,7 @@ name: do-wiki-query
 description: Answer questions against an existing Obsidian-friendly markdown wiki. Use this whenever the user is asking what is happening in the project, directory, codebase, architecture, workflow, decisions, or current state and the wiki likely contains the answer, even if they do not explicitly mention the wiki. Also use it for summaries, comparisons, and reusable analyses grounded in current wiki pages. Not for surfacing unresolved gaps; use /do-wiki-review for that.
 argument-hint: <question>
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Write, Edit
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash
 ---
 
 You are a senior engineer and wiki maintainer answering a question from a persistent markdown wiki. Your job is to answer from the wiki first, cite the pages that support the answer, and optionally file durable outputs back into the wiki so future sessions can reuse them.
@@ -18,62 +18,41 @@ The question is: $ARGUMENTS
 
 ---
 
-## Step 1 — Resolve the wiki and the query scope
+## Step 1 — Discover candidates
 
-Locate the existing wiki first.
+1. Glob for `.wiki-metadata.json`. If found, **read it immediately**. If `retrieval.status` is `"ready"`, qmd is ready — use `retrieval.collection_name` and **go straight to qmd search below**. Do not read SCHEMA.md, index.md, or run fallback checks.
+2. If no metadata or status not `"ready"`: run `which qmd 2>/dev/null` then `qmd collection list 2>/dev/null`. If both succeed and a collection path matches the wiki root (absolute path equality), qmd is ready — **go straight to qmd search below**.
+3. If qmd is still not ready: use Grep/Glob search.
+4. Runtime guard: if any qmd command fails or returns stale results, treat as degraded — fall back to Grep/Glob search.
 
-Look for a wiki root by finding files such as:
+Classify the question internally (do not expose unless it helps the answer): **lookup** (answer from one or a few pages), **comparison** (differences/tradeoffs across pages), **synthesis** (higher-level explanation combining multiple parts), **gap check** (whether the wiki can answer something yet). Derive 3-8 search terms.
 
-- `wiki/SCHEMA.md`
-- `wiki/index.md`
-- `wiki/log.md`
-- `wiki/overview.md` as a legacy root-hub file that may still need consolidation into `index.md`
+### qmd search (when ready)
 
-If the workspace uses a different but clearly established wiki root, reuse it and treat it as `<wiki root>`.
+Use `--files` to get candidate file paths only (no snippets). Then Read the actual wiki files to verify.
 
-If no wiki exists yet, stop and recommend:
+- **Lookup**: `qmd search "<keywords>" --files -n 8 -c <collection>`
+- **Comparison/synthesis**: `qmd query "<natural language question>" --files -n 8 -c <collection>`
+- Skip the `qmd://<collection>/` prefix in file paths to get the relative wiki path (e.g. `entities/omf-programme-areas.md`)
+- Noisy results: retry with different terms or add `intent:` to disambiguate
+- Use scores to prioritize which files to Read first
 
-```text
-/do-wiki-build <topic or wiki goal>
-```
+### Grep/Glob search (when qmd not ready)
 
-Then interpret the query.
+1. Locate wiki root by Glob for `SCHEMA.md`, `index.md`, or `log.md`. If no wiki exists, stop and recommend `/do-wiki-build <topic>`. If multiple roots are ambiguous, ask a minimal follow-up.
+2. Derive 3-8 search terms from the question.
+3. Search immediately with Grep and Glob on the wiki directories.
+4. Read SCHEMA.md/index.md only when: the question is a **comparison/synthesis** needing structural context, you are **writing back**, or initial search is a dead end.
 
-Classify it as one of these broad shapes:
+### Verification (always required)
 
-1. **lookup** — the user wants a direct answer from one or a few pages
-2. **comparison** — the user wants differences, similarities, tradeoffs, or rankings across pages
-3. **synthesis** — the user wants a higher-level explanation that combines multiple parts of the wiki
-4. **gap check** — the user is effectively asking whether the wiki can answer something yet
+Read the actual wiki files for top candidates. Follow `[[wikilinks]]`, `Related pages`, `Sources` outward from relevant notes. Expand outward only if the neighborhood is insufficient. Do not read the entire wiki unless the question truly requires it.
 
-This classification is only to guide the workflow. Do not expose it unless it helps the answer.
-
----
-
-## Step 2 — Read the wiki contract and map the relevant pages
-
-Before answering, read:
-
-1. `<wiki root>/SCHEMA.md`
-2. `<wiki root>/index.md`
-3. `<wiki root>/overview.md` when it exists and may still contain legacy root-hub context not yet folded into `index.md`
-4. the most recent relevant parts of `<wiki root>/log.md` when freshness matters for the question
-5. `${CLAUDE_SKILL_DIR}/references/analysis-template.md`
-6. `${CLAUDE_SKILL_DIR}/references/writeback-criteria.md`
-
-Use `Grep` and `Glob` to shortlist relevant pages from the wiki. Prefer this workflow:
-
-1. derive 3-8 search terms from the question
-2. search `index.md`, any legacy root `overview.md`, and the wiki directories for likely candidate pages
-3. read the most relevant pages first
-4. follow `[[wikilinks]]`, `Related pages`, `Sources`, or similar graph sections outward from the first relevant notes
-5. expand outward only if the current note neighborhood is insufficient
-
-Do not read the entire wiki unless the question truly requires it.
+If qmd results and the wiki disagree, trust the wiki files. Always verify candidates by Reading the actual wiki files — qmd discovers file paths, Read confirms content.
 
 ---
 
-## Step 3 — Answer from the wiki, with citations
+## Step 2 — Answer with citations
 
 Answer the question using the current wiki as the evidence base.
 
@@ -91,52 +70,81 @@ Keep the answer concise but complete. The first thing the user sees should be th
 
 ---
 
-## Step 4 — Decide whether to write back
+## Step 3 — Write back (when durable)
 
 Some query outputs are durable and should become part of the wiki. Others are one-off answers and should stay in chat.
 
-Use `${CLAUDE_SKILL_DIR}/references/writeback-criteria.md` to decide.
+### Write back when
 
-### Write back when the answer is durable
+- non-trivial comparison across multiple pages
+- cross-source synthesis that future sessions will likely reuse
+- taxonomy, framework, or summary that improves navigation
+- recurring explanation that clearly belongs in the knowledge base
+- the user explicitly asked to save, file, preserve, or turn it into a page
 
-Create or update a page under `<wiki root>/analyses/` or the most appropriate existing wiki page when the result is any of the following:
+### Do not write back when
 
-- a non-trivial comparison across multiple pages
-- a cross-source synthesis that future sessions will likely reuse
-- a taxonomy, framework, or summary that improves navigation of the wiki
-- a recurring explanation that clearly belongs in the knowledge base
-- an answer the user explicitly asked to save, file, preserve, or turn into a page
+- simple lookup from one page
+- narrow, ephemeral, or operationally trivial
+- would create an isolated page with weak graph connections
+- when in doubt, prefer fewer new pages
 
-If a clearly relevant analysis page already exists, update it in place instead of duplicating it.
+### How to write back
 
-If you create a new analysis note, use a canonical kebab-case filename. The H1 title inside the file can remain human-readable.
+Create or update a page under `<wiki root>/analyses/` or the most appropriate existing wiki page.
+
+Analysis page structure:
+
+```md
+# <Analysis Title>
+
+- Query: <original question>
+- Created: YYYY-MM-DD
+- Scope: <what this covers>
+
+## Short answer
+
+<2-5 sentence answer>
+
+## Evidence from the wiki
+
+- [[note-name]] — <why it matters>
+
+## Synthesis
+
+<combined explanation or comparison>
+
+## Caveats and uncertainty
+
+- ...
+
+## Related pages
+
+- [[index]]
+- [[related-page-slug]]
+```
 
 When writing back:
 
-1. use the bundled analysis template as a starting point
-2. cite the supporting wiki pages inside the analysis
-3. include `Related pages` wikilinks so the analysis is connected to the surrounding graph
-4. update at least one clearly relevant topic, entity, concept, or hub note when that relationship is materially useful and obvious from the wiki
-5. update `index.md`
-6. append a parseable entry to `<wiki root>/log.md` using a heading like:
+1. cite supporting wiki pages inside the analysis
+2. include `Related pages` wikilinks so the analysis is connected to the surrounding graph
+3. update at least one clearly relevant topic, entity, concept, or hub note when that relationship is materially useful
+4. update `index.md`
+5. append a parseable entry to `<wiki root>/log.md`:
 
 ```md
 ## [YYYY-MM-DD] query | <question summary>
 ```
 
-### Do not write back when the answer is ephemeral
+If modifying an existing page rather than creating a new analysis, adapt to that page's existing structure instead of forcing the analysis template.
 
-Do not create a page when the answer is very narrow, obvious from one page, or unlikely to matter beyond the current chat.
+### Refresh qmd after writes
 
-Avoid isolated analysis pages that only appear in the file tree and `index.md` but are not linked into the note graph.
-
-When in doubt, prefer fewer new pages.
+If you wrote to the wiki and qmd was ready, run `qmd update -c <collection> 2>/dev/null`. If refresh fails, report it but do not roll back wiki edits.
 
 ---
 
-## Step 5 — Report back
-
-After answering the question, output:
+## Step 4 — Report back
 
 ```md
 ### Answer
@@ -152,10 +160,6 @@ After answering the question, output:
 - <path>
 - Index: <path or "unchanged">
 - Log: <path or "unchanged">
-
-### Next useful command
-
-- `/do-wiki-add <local source path or topic>` or `/do-wiki-lint [scope]`
 ```
 
 If nothing was written back, say `none` under `Filed back into wiki`.
@@ -164,12 +168,9 @@ If nothing was written back, say `none` under `Filed back into wiki`.
 
 ## Rules
 
-- Read the wiki schema before answering.
-- Search the wiki before widening the read surface.
 - Cite supporting wiki page paths in the answer.
+- Always verify qmd candidates by Reading the actual wiki files. qmd discovers file paths — Read confirms content.
+- If qmd is unavailable, unmapped, degraded, or noisy, fall back to Grep and Glob without breaking.
 - Do not fetch external sources in this skill.
 - Do not modify raw-source files.
 - Durable write-backs use canonical kebab-case filenames and `[[kebab-case-note-name]]` links.
-- Write back only when the output has durable value.
-- When writing back, update both `index.md` and `<wiki root>/log.md`.
-- Prefer graph-strengthening write-backs over isolated analysis notes.

@@ -140,4 +140,38 @@ Periodically check for:
 - Prefer incremental updates over large rewrites.
 - Keep the wiki readable by humans and easy for LLMs to traverse without requiring search infrastructure.
 - Prefer many small linked notes over monoliths when durable nodes exist.
+
+## Retrieval Tooling
+
+This wiki optionally uses qmd for candidate discovery during wiki skill operations. qmd accelerates finding relevant pages but is never the authority layer — the wiki files remain authoritative.
+
+- Configuration: `.wiki-metadata.json` at the wiki root
+- Wiki skills check `.wiki-metadata.json` first as the fast path: if `retrieval.status` is `"ready"`, they use the `collection_name` directly and skip `which qmd` + `qmd collection list`
+- When metadata is missing or status is not `"ready"`, skills fall back to `which qmd` + `qmd collection list` and match by absolute path equality
+- Any qmd command that fails or returns stale results at runtime triggers a degrade to Grep/Glob
+- After wiki edits, skills refresh qmd if the collection is ready
+- `log.md` is deprioritized in factual retrieval; it records maintenance history, not primary evidence
+- If qmd refresh fails after wiki edits, report it but do not roll back successful wiki edits
+
+### .wiki-metadata.json
+
+This file stores retrieval tooling configuration as a durable hint for humans and future agents. Live runtime checks against qmd still override the file.
+
+Example structure:
+
+```json
+{
+  "retrieval": {
+    "tool": "qmd",
+    "collection_name": "<collection-name>",
+    "collection_path": "<absolute-path-to-wiki-root>",
+    "status": "ready",
+    "last_verified": "<YYYY-MM-DD>"
+  }
+}
+```
+
+Status values: `ready`, `unmapped`, `unavailable`, `degraded`
+
+Collection matching uses absolute path equality. Do not trust collection name alone.
 ```

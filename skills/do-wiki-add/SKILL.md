@@ -3,7 +3,7 @@ name: do-wiki-add
 description: Read a local source file or intentionally save conversation context as a conversation-sourced note, then integrate it into an existing Obsidian-friendly markdown wiki. Use this when the user wants to add a source to the wiki, add a document, ingest a local note, transcript, article, report, or PDF, or explicitly preserve the current conversation as a source note. Not for proposal-first session learnings that directly update existing pages; use /do-wiki-learnings.
 argument-hint: <local source path | topic or summary from chat>
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Write, Edit
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash
 ---
 
 You are a senior engineer and disciplined wiki maintainer working in the current workspace. Your job is to compile content into the persistent wiki so future sessions inherit the knowledge instead of rediscovering it.
@@ -25,9 +25,7 @@ The content to add is: $ARGUMENTS
 
 ---
 
-## Step 1 — Resolve the source and the wiki
-
-Start by locating both the source and the target wiki.
+## Step 1 — Resolve source, wiki & discover related notes
 
 ### Source resolution
 
@@ -51,125 +49,80 @@ Find the existing wiki by looking for files such as:
 
 If the workspace uses a different but clearly established wiki root, reuse it.
 
+If multiple wiki roots are present and the target is ambiguous, ask the smallest possible follow-up question.
+
 If no existing wiki can be found, stop and recommend:
 
 ```text
 /do-wiki-build <topic or wiki goal>
 ```
 
----
-
-## Step 1.5 — Detect mode
-
-Determine whether this run operates in **file mode** or **chat-context mode**.
-
 ### Mode detection
 
 1. If `$ARGUMENTS` resolves to an existing local file (or is clearly a file path with an extension), use **file mode**.
 2. If `$ARGUMENTS` does not resolve to a file and instead looks like a topic, question, or natural-language summary, use **chat-context mode**.
-3. If ambiguous (could be either a file description or a chat topic), ask the user: "Did you mean a local file path, or should I synthesize from our conversation?"
+3. If ambiguous, ask the user: "Did you mean a local file path, or should I synthesize from our conversation?"
 
-### Chat-context mode specifics
+### Check qmd readiness
 
-When running in chat-context mode:
+1. Glob for `.wiki-metadata.json`. If found, **read it immediately**. If `retrieval.status` is `"ready"`, qmd is ready — use `retrieval.collection_name` and **skip to discovery below**. Do not run fallback checks.
+2. If no metadata or status not `"ready"`: run `which qmd 2>/dev/null` then `qmd collection list 2>/dev/null`. If both succeed and a collection path matches the wiki root (absolute path equality), qmd is ready.
+3. If qmd is still not ready: use Grep/Glob to find existing notes.
+4. Runtime guard: if any qmd command fails or returns stale results, treat as degraded — fall back to Grep/Glob.
 
-1. The "source" is the current conversation context — facts, decisions, technical findings, and open questions discussed so far.
-2. Use chat-context mode only when the goal is to intentionally preserve that conversation as a source-like note in the wiki.
-3. If the goal is instead to harvest durable session learnings directly into existing pages after a proposal step, stop and recommend `/do-wiki-learnings`.
-4. Read `${CLAUDE_SKILL_DIR}/references/chat-context-ingest.md` before proceeding to Step 2.
-5. Use `$ARGUMENTS` as the topic or summary title. Slugify it for the source page filename.
-6. On the source page, set `Source type: conversation` and record `Conversation date: YYYY-MM-DD`.
-7. Conversation-sourced content is inherently less verified than a curated file. Err toward explicit uncertainty. Mark claims as "discussed" or "agreed in conversation" rather than "confirmed."
-8. In the log entry, use the heading format `## [YYYY-MM-DD] add (chat) | <topic>` instead of `add (file)`.
+If qmd is ready, read `${CLAUDE_SKILL_DIR}/references/qmd-usage.md` for finding existing related notes.
 
-File mode proceeds exactly as before — no behavioral changes.
+### Read the wiki contract & discover related notes
 
----
+Read before editing:
 
-## Step 2 — Read the wiki contract before editing
-
-Before touching any wiki page, read:
-
-1. the schema file for the wiki
-2. `index.md`
-3. the most recent relevant parts of `log.md`
+1. `<wiki root>/SCHEMA.md`
+2. `<wiki root>/index.md`
+3. the most recent relevant parts of `<wiki root>/log.md`
 4. any existing source page or topic/entity/concept pages that look directly related to the source
 5. `${CLAUDE_SKILL_DIR}/references/source-summary-template.md`
 6. `${CLAUDE_SKILL_DIR}/references/ingest-checklist.md`
+7. if chat-context mode: `${CLAUDE_SKILL_DIR}/references/chat-context-ingest.md`
 
-This step is mandatory. The wiki should evolve consistently rather than page-by-page improvisation.
+**If qmd is ready**, follow `references/qmd-usage.md` to find existing related notes before editing.
 
----
+**If qmd is not ready**, use Grep and Glob to find existing notes that mention the same entities, topics, or concepts.
 
-## Step 3 — Read the source and extract what matters
+Always read the actual candidate pages before editing.
 
-### File mode
+### Read the source
 
-Read the source file carefully.
+**File mode**: Read the source file carefully. Distinguish facts, claims/interpretations, open questions, and entities/concepts/topics to link. When the source is large, read enough for a faithful summary and use targeted follow-up reads for the most relevant sections.
 
-Distinguish:
-
-- **facts** directly supported by the source
-- **claims or interpretations** made by the source
-- **open questions** the source raises but does not settle
-- **entities, concepts, and topics** that should be linked into the wiki
-
-When the source is large, read enough of it to produce a faithful summary and then use targeted follow-up reads for the most relevant sections.
-
-If the file format is not readable with the available tools, stop and say exactly what prevented ingestion.
-
-### Chat-context mode
-
-Synthesize the current conversation context into a structured summary.
-
-Distinguish:
-
-- **decisions and facts** agreed upon in conversation
-- **claims or interpretations** raised but not fully settled
-- **open questions** that remain unresolved
-- **entities, concepts, and topics** that should be linked into the wiki
-
-Err toward uncertainty. If a point was mentioned but not confirmed, flag it explicitly. Prefer "X was discussed as a likely approach" over "X is the approach."
+**Chat-context mode**: Synthesize the current conversation context. Distinguish decisions/facts, claims not fully settled, open questions, and entities/concepts/topics to link. Err toward uncertainty. Prefer "X was discussed as a likely approach" over "X is the approach." Use `$ARGUMENTS` as the topic title; set `Source type: conversation` and `Conversation date: YYYY-MM-DD` on the source page.
 
 ---
 
-## Step 4 — Update the wiki incrementally
+## Step 2 — Update the wiki incrementally
 
 Treat the wiki as a compiled artifact that must stay internally coherent.
 
 ### A. Source page
 
-Create or update a source summary page under `wiki/sources/` or the workspace's equivalent source-page directory.
+Create or update a source summary page under `<wiki root>/sources/` or the workspace's equivalent.
 
-Use the bundled template as a starting point and adapt it to the schema already in use.
+Use the bundled template. Canonical kebab-case filename; human-readable H1 title. Every `[[wikilink]]` should resolve to an existing canonical note or one created/updated during this pass.
 
-The source note should use a canonical kebab-case filename. The H1 title inside the note can remain human-readable.
-
-Every durable `[[wikilink]]` on the source page should resolve to an existing canonical note or to a note you create or update during the same add pass.
-
-If a page for this source already exists:
-
-- update it in place
-- preserve useful prior links or notes
-- do not duplicate it under a second filename
+If a page for this source already exists, update it in place. Do not duplicate it.
 
 ### B. Related pages
 
-Update the most relevant topic, entity, concept, or analysis pages.
-
-Graph fan-out is required, not optional. Each add should leave behind a navigable local graph around the source, not just a standalone source summary.
-
-Use these rules:
+Update the most relevant topic, entity, concept, or analysis pages. Graph fan-out is required, not optional.
 
 1. Only touch pages materially affected by the source.
-2. If an important entity, concept, or topic is central to the source and still lacks a dedicated page, create a minimal canonical note for it using a kebab-case filename.
+2. If an important entity, concept, or topic lacks a dedicated page, create a minimal canonical note.
 3. Prefer small linked updates over copying the same summary text into many pages.
-4. If the new source contradicts an existing page, make the conflict explicit instead of silently replacing the older view.
-5. If the new source supersedes an old claim, say so clearly and point to both sources.
-6. When the source page links to a topic, entity, concept, or analysis note, update that note to link back under `Sources`, `Mentioned in`, or `Related pages` when the relationship is materially useful.
-7. Avoid isolated durable notes. Every new note should be reachable from `index.md` or another durable note, and should contain at least one meaningful outbound link.
+4. If the new source contradicts an existing page, make the conflict explicit.
+5. If the new source supersedes an old claim, say so clearly.
+6. Update reciprocal links under `Sources`, `Mentioned in`, or `Related pages` when materially useful.
+7. Avoid isolated durable notes. Every new note should be reachable from `index.md` or another durable note.
 
-When you create a new topic, entity, or concept note during the add, keep it small but structured. A good minimal shape is:
+Minimal new-note shape:
 
 ```md
 # Human Readable Title
@@ -189,13 +142,11 @@ When you create a new topic, entity, or concept note during the add, keep it sma
 
 ### C. Index
 
-Update `index.md` so every durable page touched by this add remains discoverable with a one-line description.
-
-Treat `index.md` as a map-of-content. Use grouped `[[wikilinks]]` where appropriate, not just plain prose references.
+Update `index.md` so every durable page touched remains discoverable with a one-line description. Use grouped `[[wikilinks]]` where appropriate.
 
 ### D. Log
 
-Append a new entry to `log.md` using a parseable heading like:
+Append a new entry to `log.md`:
 
 **File mode:**
 ```md
@@ -207,31 +158,25 @@ Append a new entry to `log.md` using a parseable heading like:
 ## [YYYY-MM-DD] add (chat) | <topic>
 ```
 
-The entry should capture:
+Capture: the source path or conversation topic, pages created or updated, important contradictions, gaps, or follow-up leads.
 
-- the source path or conversation topic
-- pages created or updated
-- important contradictions, gaps, or follow-up leads
+### E. Refresh qmd after writes
 
----
-
-## Step 5 — Preserve uncertainty and provenance
-
-The value of the wiki is not just compression. It is trustworthy synthesis.
-
-Therefore:
-
-- cite the local source path on the source page (file mode) or note the conversation date (chat-context mode)
-- make uncertainty explicit
-- separate the source's claims from the wiki's cross-source synthesis when they differ
-- avoid overstating weak evidence
-- never rewrite raw-source files
+If qmd was ready and you wrote to the wiki, run `qmd update -c <collection> 2>/dev/null`. If refresh fails, report it but do not roll back wiki edits.
 
 ---
 
-## Step 6 — Report back
+## Step 3 — Preserve uncertainty and provenance
 
-After updating the wiki, output:
+- Cite the local source path (file mode) or note the conversation date (chat-context mode).
+- Make uncertainty explicit.
+- Separate the source's claims from the wiki's cross-source synthesis when they differ.
+- Avoid overstating weak evidence.
+- Never rewrite raw-source files.
+
+---
+
+## Step 4 — Report back
 
 ```md
 Wiki updated from <source path or conversation topic>
@@ -242,7 +187,6 @@ Wiki updated from <source path or conversation topic>
 
 ### Touched pages
 
-- <path>
 - <path>
 
 ### New pages
@@ -263,16 +207,18 @@ Wiki updated from <source path or conversation topic>
 - `/do-wiki-add <another local source path or topic>`
 ```
 
-If the source was already represented in the wiki and you refreshed it instead of creating new pages, say that explicitly.
+If the source was already represented and you refreshed it, say so explicitly.
 
 ---
 
 ## Rules
 
-- File mode: local files only. Do not fetch URLs in this skill.
-- Chat-context mode: synthesize from the current conversation context only. Do not fetch URLs.
+- File mode: local files only. Do not fetch URLs.
+- Chat-context mode: synthesize from the current conversation context only.
 - Prefer one source per run.
 - Read the wiki schema before editing.
+- If qmd is ready, use it for finding existing related notes; otherwise fall back to Grep/Glob.
+- Never edit a wiki page based only on qmd output. Always read the actual wiki files first.
 - Durable category notes use canonical kebab-case filenames.
 - Internal note links use `[[kebab-case-note-name]]`.
 - Update `index.md` and `log.md` on every add.
@@ -281,4 +227,5 @@ If the source was already represented in the wiki and you refreshed it instead o
 - Strengthen reciprocal links when the relationship is materially useful.
 - Make contradictions and stale claims explicit.
 - Prefer incremental linked updates over large rewrites.
-- In chat-context mode, conversation-sourced claims carry less authority than file-backed claims. Mark uncertainty explicitly.
+- In chat-context mode, conversation-sourced claims carry less authority. Mark uncertainty explicitly.
+- After wiki writes, refresh qmd if the collection is ready. If refresh fails, report it but do not roll back.

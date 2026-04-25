@@ -3,7 +3,7 @@ name: do-wiki-build
 description: Create or extend an Obsidian-friendly markdown wiki scaffold in the current workspace. Use this when the user wants to build a wiki, set up a knowledge base, create a research vault, or scaffold a living markdown note graph before adding sources with `/do-wiki-add`. Not for importing or normalizing an existing wiki-like corpus; use /do-wiki-align for that.
 argument-hint: <topic, corpus, or wiki goal>
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Write, Edit, AskUserQuestion, Skill
+allowed-tools: Read, Glob, Grep, Write, Edit, AskUserQuestion, Skill, Bash
 ---
 
 You are a senior engineer and knowledge-base architect working in the current workspace. Your job is to instantiate the LLM Wiki pattern as a durable markdown artifact, not to ingest sources or create source-derived notes yet.
@@ -30,35 +30,25 @@ The wiki goal is: $ARGUMENTS
 
 ---
 
-## Step 1 — Inspect the workspace first
+## Step 1 — Inspect workspace & choose structure
 
-Before creating anything, inspect the current workspace so the wiki fits the repo instead of fighting it.
+Before creating anything, inspect the current workspace.
 
-Read the most relevant files you can find, including when present:
+Read the most relevant files, including when present:
 
-1. Root guidance such as `CLAUDE.md`, `AGENTS.md`, `README.md`, or similar instructions
-2. Existing documentation or note directories such as `wiki/`, `knowledge/`, `vault/`, `notes/`, `docs/`, `research/`, `raw/`, or `sources/`
-3. Existing index or log files such as `index.md`, `log.md`, topic maps, or other wiki-like entry points
+1. Root guidance such as `CLAUDE.md`, `AGENTS.md`, `README.md`
+2. Existing documentation or note directories such as `wiki/`, `knowledge/`, `vault/`, `notes/`, `docs/`, `research/`, `raw/`, `sources/`
+3. Existing index or log files
 
-Inspect structure first. Read raw-source or source-material files only enough to confirm paths, filenames, and layout. Do not summarize or synthesize their contents in this skill.
+Inspect structure first. Read raw-source files only enough to confirm paths, filenames, and layout. Do not summarize or synthesize their contents.
 
-Determine:
+Determine whether a wiki-like structure already exists, whether there is a clear raw-source directory, and whether there is an existing schema to extend.
 
-- whether a wiki-like structure already exists
-- whether there is already a clear raw-source directory
-- whether there is an existing schema or operator guide you should extend instead of duplicating
-
-Once you choose the locations, treat them as `<raw root>` and `<wiki root>` for the rest of this skill.
+Once you choose locations, treat them as `<raw root>` and `<wiki root>`.
 
 Prefer extending an existing wiki over creating a parallel one.
 
-If the workspace already contains a clear wiki with `index.md`, `log.md`, and page directories, treat this skill as a structural refinement pass: add only the missing pieces needed to align it with the LLM Wiki pattern.
-
----
-
-## Step 2 — Choose the smallest correct structure
-
-Use the current workspace conventions when they are clear. If they are not clear, default to this structure:
+Use the current workspace conventions when they are clear. If not clear, default to:
 
 ```text
 raw/
@@ -75,157 +65,89 @@ wiki/
   analyses/
 ```
 
-Use these rules:
+Rules:
 
 1. `raw/` is for immutable source material. The wiki must never edit files there.
-2. `<wiki root>/` is the maintained markdown note graph.
-3. Durable category-note filenames are kebab-case, such as `pricing-strategy.md`, `market-expansion.md`, or `acme-q1-shareholder-letter.md`. Special root files like `index.md`, `log.md`, and `SCHEMA.md` keep their fixed names.
-4. Internal note links use `[[kebab-case-note-name]]`.
-5. Each durable concept, entity, topic, source, or analysis gets one canonical note. Prefer updating the existing note over creating synonyms.
-6. `<wiki root>/index.md` is the home map-of-content, content catalog, and top-level orientation page through a concise `## Overview` section near the top.
-7. `<wiki root>/log.md` is the append-only chronological record.
-8. `<wiki root>/SCHEMA.md` is the maintenance contract future sessions should follow.
+2. Durable category-note filenames are kebab-case. Special root files (`index.md`, `log.md`, `SCHEMA.md`) keep their fixed names.
+3. Internal note links use `[[kebab-case-note-name]]`.
+4. Each durable concept, entity, topic, source, or analysis gets one canonical note.
+5. `<wiki root>/index.md` is the home hub with a concise `## Overview` section near the top.
+6. `<wiki root>/log.md` is the append-only chronological record.
+7. `<wiki root>/SCHEMA.md` is the maintenance contract.
 
-Do not create a separate root `overview.md`. If a legacy `overview.md` already exists, fold its useful root-level content into `index.md` instead of preserving both files.
-
-Only create category directories that are justified. The default set above is recommended, but if the workspace is clearly narrower, keep it smaller.
+Do not create a separate root `overview.md`. Only create category directories that are justified.
 
 ---
 
-## Step 3 — Read the bundled references
+## Step 2 — Build scaffold
 
-Before writing files, read:
+Read before writing:
 
 1. `${CLAUDE_SKILL_DIR}/references/wiki-architecture.md`
 2. `${CLAUDE_SKILL_DIR}/references/schema-template.md`
 
-Use them as templates, but adapt them to the current workspace and the user's stated wiki goal.
-
----
-
-## Step 4 — Build or refine the wiki scaffold
-
-Create or update the wiki so it is immediately usable.
+Use them as templates, but adapt to the current workspace and the user's stated wiki goal.
 
 ### A. Raw source layer
 
-Ensure there is a clear raw-source location.
-
-- If the workspace already has a good raw-source directory, reuse it.
-- Otherwise create `raw/` and `raw/assets/`.
-- Create or update `raw/README.md` so it clearly states that files in `raw/` are source-of-truth inputs and must remain immutable.
+Ensure a clear raw-source location. Reuse existing directory or create `raw/` and `raw/assets/`. Create or update `raw/README.md` stating that files are immutable source-of-truth inputs.
 
 ### B. Schema layer
 
-Create or update `<wiki root>/SCHEMA.md`.
+Create or update `<wiki root>/SCHEMA.md`. It must explain: purpose and scope, directory layout, page types, canonical note classes and filename patterns, wikilink conventions, reciprocal backlink expectations, `index.md` as single root hub with `## Overview`, `index.md` and `log.md` maintenance, how `/do-wiki-add` adds sources, how query outputs can be filed back, how non-wiki skills consult and write back to the wiki, how lint passes work, raw-source immutability, and explicit uncertainty/contradiction/stale-claim rules.
 
-It must explain, in workspace-specific language:
-
-1. the purpose and scope of the wiki
-2. the directory layout
-3. the page types that exist in this wiki
-4. the canonical note classes and their filename patterns
-5. how pages should link to each other using `[[kebab-case-note-name]]`
-6. how reciprocal backlinks should be maintained
-7. how `index.md` acts as the single root hub with a concise `## Overview` section near the top
-8. how `index.md` and `log.md` must be maintained
-9. how `/do-wiki-add` should add sources and create source-derived notes
-10. how query outputs can be filed back into the wiki
-11. how non-wiki workflow skills like research, planning, execution, and plan amendment can consult the wiki and file durable findings back into it
-12. how lint or health-check passes should look
-13. the rule that raw sources are immutable
-14. the rule that uncertainty, contradictions, and stale claims must be made explicit instead of silently overwritten
-
-If there is an existing root guidance file such as `CLAUDE.md` or `AGENTS.md`, add a brief pointer to `<wiki root>/SCHEMA.md` only when you can do so cleanly without overwriting unrelated instructions. Keep that root-file edit short.
+If an existing root guidance file exists, add a brief pointer to `<wiki root>/SCHEMA.md` if it can be done cleanly.
 
 ### C. Wiki layer
 
-Create or update these core files:
+Create or update:
 
-- `<wiki root>/index.md`
-- `<wiki root>/log.md`
+- `<wiki root>/index.md` — single root hub. Near the top: concise `## Overview` section with scope, corpus, topic map, and `[[kebab-case-note-name]]` links. Group entries by page type. Give each listed page a one-line description.
+- `<wiki root>/log.md` — append-only. Add initial entry: `## [YYYY-MM-DD] build | Initial wiki scaffold`
 
-Use the chosen wiki root instead of the literal `wiki/` path when the workspace already follows a different convention.
-
-If the workspace already has a legacy `<wiki root>/overview.md`, fold any still-useful scope, corpus, topic-map, or open-question content into `index.md` and remove the separate `overview.md` file.
-
-Requirements:
-
-#### `<wiki root>/index.md`
-
-- Make it the single root hub for the wiki, not just a flat catalog.
-- Near the top, include a concise `## Overview` section that states the wiki's scope and intended corpus, distinguishes between confirmed current sources and expected future sources, captures a short starting map of major topic areas, uses `[[kebab-case-note-name]]` links for major topics or starter notes that already exist, and includes open questions if the scope is still fuzzy.
-- Group entries by page type or section such as overview, sources, topics, entities, concepts, and analyses.
-- Use `[[kebab-case-note-name]]` links wherever the linked note exists.
-- Give each listed page a one-line description.
-- Make it easy to traverse in Obsidian and easy to skim in plain markdown.
-- If the wiki is new, seed the file with the pages created during this run.
-
-#### `<wiki root>/log.md`
-
-- Make it append-only.
-- Add an initial entry for the scaffold creation using a parseable heading like:
-
-```md
-## [YYYY-MM-DD] build | Initial wiki scaffold
-```
-
-- Note the chosen structure and any non-obvious decisions.
+If a legacy `<wiki root>/overview.md` exists, fold still-useful content into `index.md` and remove it.
 
 ### D. Starter pages and directories
 
-Create any category directories needed by the chosen structure.
+Create needed category directories. Add starter pages only when they improve orientation. Prefer a minimal scaffold over empty placeholders.
 
-Add starter pages only when they improve orientation. Prefer a minimal scaffold over lots of empty placeholders.
+You may create the `sources/` directory, but do not create source summary pages from raw files in this skill.
 
-You may create the `sources/` directory during build, but do not create source summary pages under it from raw files in this skill.
+Starter pages: canonical kebab-case filenames, human-readable H1 titles, meaningful outbound `[[wikilinks]]`, linked from `index.md` or another durable note.
 
-When you create starter topic, entity, concept, or analysis notes:
-
-- use canonical kebab-case filenames
-- use human-readable H1 titles inside the files
-- add meaningful outbound `[[wikilinks]]`
-- avoid isolated files by linking each new note from `index.md` or another durable note
-
-Examples of acceptable starter pages:
-
-- a topic map page if the wiki goal has clear subdomains
-- a source intake queue page if there is already a curated raw corpus, but only as a filename- or batch-level intake aid, not a summary of source contents
-- a short analyses page if the user explicitly asked for synthesis outputs
+Acceptable starters: topic map page if clear subdomains exist, source intake queue page (filename/batch-level only, not content summaries), short analyses page if explicitly requested.
 
 Do not fabricate content that should come from later `/do-wiki-add` runs.
 
 ---
 
-## Step 5 — Keep the scaffold factual
+## Step 3 — Offer optional setup
 
-This skill creates structure, not compiled knowledge.
+### Obsidian vault setup
 
-Important boundaries:
+Resolve `<obsidian vault root>` before asking. If `<wiki root>` is a subdirectory of the current workspace/project, use the parent of `<wiki root>` so Obsidian opens the whole project and the wiki remains a folder inside it. Only use `<wiki root>` itself when the wiki root is already the workspace/project root.
 
-- Do not ingest or summarize the entire corpus yet.
-- Do not create source summary pages under `<wiki root>/sources/` from raw or source-material files in this skill.
-- Do not create topic, entity, concept, or analysis notes by extracting claims from raw or source-material files during build. Only create structural starter pages justified by the user's stated goal or the existing wiki layout.
-- Do not treat random repo docs as canonical sources unless the user clearly wants them included in the wiki corpus.
-- If you mention likely future sources or themes, label them as expectations, candidates, or open questions.
-- If the workspace already has content that clearly belongs in the wiki, you may link to it or note it as a candidate source, but do not silently convert it into fully synthesized wiki knowledge in this step.
+Use `AskUserQuestion`:
+
+> "Would you like to set up an Obsidian vault at the project root (`<obsidian vault root>`) now? This will configure Obsidian settings and plugins so the wiki remains available as a folder inside the vault."
+
+If yes: invoke the `setup-obsidian-vault` skill with `<obsidian vault root>` as the argument, not `<wiki root>` when those paths differ.
+
+### qmd retrieval setup
+
+Use `AskUserQuestion`:
+
+> "Would you like to set up qmd retrieval for this wiki? This enables faster candidate discovery across wiki pages. The wiki will work fully without it, but qmd can accelerate searches when the wiki grows large."
+
+If no: skip. Wiki runs in fallback-only mode.
+
+If yes: read `${CLAUDE_SKILL_DIR}/references/qmd-usage.md` and follow the setup instructions there (installation check, collection registration, index, record details in `.wiki-metadata.json` and `SCHEMA.md`, log entry).
+
+If setup fails at any point: the wiki remains fully functional. Do not roll back the scaffold. Report the failure. Set `retrieval.status` in `.wiki-metadata.json` to `"degraded"` or `"unmapped"`.
 
 ---
 
-## Step 6 — Offer Obsidian vault setup
-
-After the scaffold is written, use `AskUserQuestion` to ask:
-
-> "Would you like to set up an Obsidian vault at the wiki root (`<wiki root>`) now? This will configure Obsidian settings, plugins, and standard folders."
-
-- If the user answers **yes**: invoke the `setup-obsidian-vault` skill with the wiki root path as the argument.
-- If the user answers **no**: proceed directly to Step 7.
-
----
-
-## Step 7 — Report back
-
-After writing the scaffold, output:
+## Step 4 — Report back
 
 ```md
 Wiki scaffold ready at <wiki root>
@@ -233,21 +155,27 @@ Wiki scaffold ready at <wiki root>
 ### Created or updated
 
 - <path>
-- <path>
 
 ### Structure decisions
 
 - Raw sources: <path>
 - Wiki root: <path>
+- Obsidian vault root: <path or "not configured">
 - Schema: <path>
 - Root guidance link: <path or "none">
+
+### Retrieval setup
+
+- qmd status: ready | unmapped | unavailable | deferred
+- Collection: <name or "none">
+- Metadata: <wiki root>/.wiki-metadata.json or "none"
 
 ### Next step
 
 - `/do-wiki-add <local source path or topic>`
 ```
 
-If you found an existing wiki and only refined it, say so explicitly in the report.
+If you found an existing wiki and only refined it, say so explicitly.
 
 ---
 
@@ -265,3 +193,8 @@ If you found an existing wiki and only refined it, say so explicitly in the repo
 - `<wiki root>/index.md` must be useful immediately after this skill runs.
 - Do not perform source ingestion or create source-derived notes in this skill. That belongs to `/do-wiki-add`.
 - If the workspace is too ambiguous to place the wiki safely, ask the smallest follow-up question needed.
+- qmd retrieval setup is optional. The wiki must work fully without it.
+- Obsidian vault setup should target the project/workspace root that contains the wiki, not the `wiki/` directory itself, unless the wiki is already the workspace root.
+- If qmd setup is offered but fails, leave the wiki usable and report the failure.
+- If qmd setup succeeds, record collection details in `.wiki-metadata.json` and reference it in `SCHEMA.md`.
+- Collection matching uses absolute path equality. Do not trust collection name alone.

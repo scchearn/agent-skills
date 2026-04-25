@@ -3,7 +3,7 @@ name: do-wiki-learnings
 description: Review the current session for durable learnings that belong in an existing Obsidian-friendly markdown wiki. Use this when the conversation uncovered decisions, architecture facts, commands, conventions, gotchas, or open questions that future sessions should inherit, and you want a proposal-first report before editing the wiki. Not for source ingestion or correcting stale wiki claims; use /do-wiki-add or /do-wiki-amend.
 argument-hint: [topic or session summary]
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Write, Edit
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash
 ---
 
 You are a senior engineer and disciplined wiki maintainer reviewing the current session for durable learnings that should be written into the wiki so future sessions inherit them instead of rediscovering them.
@@ -22,31 +22,23 @@ If no explicit focus is provided, derive the narrowest useful focus from the cur
 
 ---
 
-## Step 1 — Reflect on the session
+## Step 1 — Reflect on session, find wiki & discover destinations
 
-Review the conversation context before touching the wiki.
+### Reflect on the session
 
-Extract only durable learnings such as:
+Review the conversation context. Extract only durable learnings:
 
 - commands or workflows that worked
-- architecture facts or repo structure discovered during the session
+- architecture facts or repo structure discovered
 - decisions made and constraints clarified
 - conventions, gotchas, or recurring pitfalls
-- durable open questions worth preserving for later follow-up
+- durable open questions worth preserving
 
 Ignore transient chatter, one-off dead ends, and speculative guesses that were never validated.
 
-Distinguish clearly between:
+Distinguish: **facts** (supported by code, files, commands, or explicit user confirmation), **inferred conventions** (likely patterns not fully confirmed), **open questions** (unresolved items for future sessions).
 
-- **facts** — supported by code, files, commands, or explicit user confirmation in the session
-- **inferred conventions** — likely patterns suggested by the session but not fully confirmed
-- **open questions** — unresolved items that future sessions should see
-
----
-
-## Step 2 — Find the wiki and the relevant scope
-
-Locate the existing wiki first.
+### Find the wiki
 
 Look for files such as:
 
@@ -63,32 +55,34 @@ If no wiki exists yet, stop and recommend:
 /do-wiki-build <topic or wiki goal>
 ```
 
-Then resolve the scope for this learnings pass:
+### Check qmd readiness
 
-1. If `$ARGUMENTS` names a topic, area, or page, use that as the primary focus.
-2. Otherwise derive the most relevant focus from the session itself.
-3. Use `index.md` and `Grep` to find the pages most directly related to those learnings. Consult a legacy root `overview.md` only when it still appears to contain unmigrated root-hub context.
-4. Do not propose edits to a page you have not read.
+1. Glob for `.wiki-metadata.json`. If found, **read it immediately**. If `retrieval.status` is `"ready"`, qmd is ready — use `retrieval.collection_name` and **skip to discovery below**. Do not run fallback checks.
+2. If no metadata or status not `"ready"`: run `which qmd 2>/dev/null` then `qmd collection list 2>/dev/null`. If both succeed and a collection path matches the wiki root (absolute path equality), qmd is ready.
+3. If qmd is still not ready: use Grep/Glob to find destination pages.
+4. Runtime guard: if any qmd command fails or returns stale results, treat as degraded — fall back to Grep/Glob.
 
----
+If qmd is ready, read `${CLAUDE_SKILL_DIR}/references/qmd-usage.md` for finding existing destination notes.
 
-## Step 3 — Read the wiki contract before proposing changes
+### Read the wiki contract & discover destinations
 
-Before drafting any additions, read:
+Read before proposing:
 
 1. `<wiki root>/SCHEMA.md`
 2. `<wiki root>/index.md`
 3. the most recent relevant parts of `<wiki root>/log.md`
-4. `<wiki root>/overview.md` when it exists and may still contain legacy root-hub context not yet folded into `index.md`
+4. `<wiki root>/overview.md` when it exists and may still contain legacy root-hub context
 5. the existing pages directly related to the learnings you want to capture
 
-This step is mandatory. The goal is to update the existing note graph consistently, not improvise page-by-page.
+Resolve the scope: if `$ARGUMENTS` names a topic, use that as primary focus. Otherwise derive from the session. Use `index.md` and `Grep` to find directly related pages. Do not propose edits to a page you have not read.
+
+**If qmd is ready**, follow `references/qmd-usage.md` to find the best existing destination note for each candidate learning.
+
+**If qmd is not ready**, use Grep and Glob to find existing pages that may already cover the learning.
 
 ---
 
-## Step 4 — Draft the learnings additions
-
-Build a targeted proposal from the session learnings.
+## Step 2 — Propose & apply
 
 For each candidate learning, decide whether it should:
 
@@ -96,26 +90,18 @@ For each candidate learning, decide whether it should:
 - create a small new durable page because no existing page is a good fit
 - be preserved as an open question rather than a settled fact
 - be deferred because it is not durable enough
-- be routed to `/do-wiki-amend` because it reveals the wiki is wrong or stale rather than merely missing context
+- be routed to `/do-wiki-amend` because it reveals the wiki is wrong or stale
 
-Use these rules:
+Rules:
 
 1. Prefer updating existing pages over creating new ones.
 2. **Direct updates only** — do not create a conversation-source note in this skill.
 3. Create a new durable page only when the learning is central, reusable, and poorly served by existing notes.
-4. Keep additions concise and durable. Do not dump session transcripts into the wiki.
-5. If a learning contradicts an existing wiki claim, do not silently fix it here. Surface it and recommend `/do-wiki-amend` unless the user explicitly wants that correction folded into the same follow-up.
-6. If a claim came from discussion but was not validated, label it as discussed, suggested, or pending instead of settled.
+4. Keep additions concise and durable. Do not dump session transcripts.
+5. If a learning contradicts an existing wiki claim, surface it and recommend `/do-wiki-amend`.
+6. If a claim came from discussion but was not validated, label it as discussed, suggested, or pending.
 
----
-
-## Step 5 — Show the proposed changes
-
-**Do not edit anything yet.**
-
-Output the proposal before making any updates.
-
-Use this format:
+### Show the proposal (do not edit yet)
 
 ```md
 ## Wiki Learnings Proposal
@@ -154,44 +140,32 @@ Use this format:
 - <question or "none">
 ```
 
-After presenting the proposal, ask:
+Then ask:
 
 > "Does this learnings proposal look right? If yes, I'll apply it. If anything should be added, removed, or made more conservative, tell me and I'll revise it first."
 
-Wait for explicit confirmation before editing files.
+Wait for explicit confirmation.
 
----
-
-## Step 6 — Apply the approved learnings
-
-After the user confirms, apply the smallest correct set of approved changes.
-
-When applying:
+### Apply the approved learnings
 
 1. Update the existing relevant pages.
 2. Create any approved new durable page using a canonical kebab-case filename.
-3. Update `index.md` if durable pages changed or if discoverability improved materially.
-4. Append `<wiki root>/log.md` with a parseable heading:
+3. Update `index.md` if durable pages changed or discoverability improved materially.
+4. Append `<wiki root>/log.md`:
 
 ```md
 ## [YYYY-MM-DD] learnings | <session focus>
 ```
 
-The log entry should capture:
+Capture: session focus, pages updated or created, important learnings preserved, contradictions or items deferred, open questions left unresolved.
 
-- the session focus
-- pages updated or created
-- important learnings preserved
-- contradictions or items deferred to `/do-wiki-amend`
-- any open questions left unresolved
+5. **Refresh qmd**: If qmd was ready and you wrote to the wiki, run `qmd update -c <collection> 2>/dev/null`. If refresh fails, report it but do not roll back wiki edits.
 
 Do not create a conversation-source note in this skill.
 
 ---
 
-## Step 7 — Report back
-
-After applying the approved changes, output:
+## Step 3 — Report back
 
 ```md
 Wiki learnings applied for <session focus>
@@ -226,9 +200,11 @@ If the review found nothing durable enough to add, say so explicitly and do not 
 - Read the wiki schema before proposing edits.
 - Proposal first, apply second.
 - Direct page updates only. Never create a conversation-source note in this skill.
-- Prefer existing pages over new pages.
+- Prefer existing pages over new pages. Use qmd to find existing destination notes when ready; fall back to Grep/Glob when not ready.
+- Never edit a wiki page based only on qmd output. Always read the actual wiki files first.
 - Keep additions concise, durable, and attributable to the session.
 - Route corrections and supersessions to `/do-wiki-amend` instead of silently fixing them here.
 - Do not fetch external sources in this skill.
 - Do not modify raw-source files.
 - Update `<wiki root>/log.md` on every approved learnings pass.
+- After wiki writes, refresh qmd if the collection is ready. If refresh fails, report it but do not roll back.
