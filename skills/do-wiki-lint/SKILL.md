@@ -43,7 +43,7 @@ Look for an existing wiki root by finding files such as:
 
 If the workspace uses a different but clearly established wiki root, reuse it and treat it as `<wiki root>`.
 
-Then resolve the lint scope: if the user named a wiki root, subdirectory, topic, or entity, use that. If no scope given, lint the whole wiki.
+Resolve the actual `<wiki root>` from the on-disk wiki contract files, not from qmd metadata. If multiple candidate wiki roots exist and the target is ambiguous, ask the smallest possible follow-up question. Then resolve the lint scope: if the user named a wiki root, subdirectory, topic, or entity, use that. If no scope given, lint the whole wiki.
 
 If no wiki exists yet, stop and recommend:
 
@@ -67,12 +67,15 @@ Use `Glob` and `Grep` to map the pages in scope before reading deeply.
 
 Treat `index.md` as the authoritative root hub. The desired steady state is a single root-hub file: `index.md` with a concise `## Overview` section before the grouped page catalog.
 
-### Check qmd readiness (secondary only)
+### Check qmd readiness and metadata health (secondary only)
 
-1. Glob for `.wiki-metadata.json`. If found, **read it immediately**. If `retrieval.status` is `"ready"`, qmd is ready — use `retrieval.collection_name`. Do not run fallback checks.
-2. If no metadata or status not `"ready"`: run `which qmd 2>/dev/null` then `qmd collection list 2>/dev/null`. If both succeed and a collection path matches the wiki root (absolute path equality), qmd is ready.
-3. If qmd is still not ready: qmd not available, use Grep/Glob only.
-4. Runtime guard: if any qmd command fails or returns stale results, treat as degraded — fall back to Grep/Glob.
+1. Glob for `<wiki root>/.wiki-metadata.json`. If found, **read it immediately**.
+2. Compare `retrieval.collection_path` to the actual resolved `<wiki root>` using absolute path equality. If they differ, mark qmd metadata as stale and plan a safe metadata reconciliation during fixes.
+3. If metadata exists, `retrieval.status` is `"ready"`, and `retrieval.collection_path` matches the actual resolved `<wiki root>`, qmd is ready — use `retrieval.collection_name`. Do not run fallback checks.
+4. If metadata is missing, stale, or status is not `"ready"`: run `which qmd 2>/dev/null` then `qmd collection list 2>/dev/null`. If both succeed and a collection path matches the actual resolved `<wiki root>` (absolute path equality), qmd is ready.
+5. If metadata is stale and qmd is available, validate the recorded `retrieval.collection_name` with `qmd collection show <collection-name> 2>/dev/null` when supported. If another collection is already registered for the actual `<wiki root>`, plan to update `retrieval.collection_name` to that collection. If no collection points at the actual `<wiki root>`, do not rename or move wiki directories; set `retrieval.status` to `"degraded"`, keep the actual `<wiki root>` in `retrieval.collection_path`, and report the collection/path mismatch.
+6. If qmd is still not ready: qmd not available, use Grep/Glob only.
+7. Runtime guard: if any qmd command fails or returns stale results, treat as degraded — fall back to Grep/Glob.
 
 qmd is **secondary only** in this skill: use it only to find related-note neighborhoods when a structural fix might need reciprocal links or nearby canonical notes. If ready, read `${CLAUDE_SKILL_DIR}/references/qmd-usage.md`.
 
@@ -86,7 +89,9 @@ qmd is **secondary only** in this skill: use it only to find related-note neighb
 
 **D. Maintenance signals** — Check for: recent ingests not in index; lint-worthy gaps never reconciled in log; missing follow-up notes.
 
-**E. Obsidian vault placement** — Check whether `<wiki root>/.obsidian/` exists. The desired layout is an Obsidian vault at the project/workspace root that contains the wiki, not a vault nested inside `wiki/`, unless `<wiki root>` is itself the project/workspace root.
+**E. Obsidian config placement** — Check whether `<wiki root>/.obsidian/` exists. The desired layout is for `.obsidian/` to live at the parent directory root that contains the wiki, not nested inside the wiki directory, unless `<wiki root>` is itself the project/workspace root.
+
+**F. qmd metadata integrity** — Check whether `<wiki root>/.wiki-metadata.json` reflects the actual resolved `<wiki root>`. Lint reconciles metadata to the on-disk wiki; it must never rename, move, or recreate the wiki directory to match stale metadata.
 
 Distinguish: **fix now** (safe from existing wiki evidence) vs **annotate now** (mark but don't resolve) vs **follow-up** (needs future evidence/research/user direction).
 
@@ -107,13 +112,22 @@ When a legacy `<wiki root>/overview.md` exists:
 3. treat `index.md` as authoritative when the two files differ
 4. delete `overview.md` before finishing the pass
 
-When `<wiki root>/.obsidian/` exists and `<wiki root>` is a subdirectory of the project/workspace root:
+When `<wiki root>/.obsidian/` exists and `<wiki root>` is a subdirectory:
 
-1. resolve `<obsidian vault root>` as the parent directory that contains `<wiki root>`
-2. if `<obsidian vault root>/.obsidian/` does not exist, move `<wiki root>/.obsidian/` to `<obsidian vault root>/.obsidian/`
-3. if `<obsidian vault root>/.obsidian/` already exists, do not overwrite or merge it; report the nested vault as unresolved and explain that manual reconciliation is needed
-4. if Obsidian's global vault registry is available at `$HOME/.config/obsidian/obsidian.json` or `$HOME/Library/Application Support/obsidian/obsidian.json`, update entries that point exactly at `<wiki root>` to point at `<obsidian vault root>` after a successful move
+1. resolve `<parent directory root>` as the parent directory that contains `<wiki root>`
+2. if `<parent directory root>/.obsidian/` does not exist, move only `<wiki root>/.obsidian/` to `<parent directory root>/.obsidian/`
+3. if `<parent directory root>/.obsidian/` already exists, do not overwrite or merge it; report the nested `.obsidian/` as unresolved and explain that manual reconciliation is needed
+4. if Obsidian's global vault registry is available at `$HOME/.config/obsidian/obsidian.json` or `$HOME/Library/Application Support/obsidian/obsidian.json`, update entries that point exactly at `<wiki root>` to point at `<parent directory root>` after a successful move
 5. record the vault-placement fix in `<wiki root>/log.md` because the wiki path remains unchanged
+
+When `<wiki root>/.wiki-metadata.json` has a stale `retrieval.collection_path`:
+
+1. update `retrieval.collection_path` to the actual resolved absolute `<wiki root>`
+2. preserve `retrieval.collection_name` when it validates against the actual `<wiki root>`
+3. if a different qmd collection is already registered for the actual `<wiki root>`, update `retrieval.collection_name` to that collection
+4. if the recorded or corrected qmd collection validates against the actual `<wiki root>`, keep or set `retrieval.status` to `"ready"` and update `retrieval.last_verified` to `YYYY-MM-DD`
+5. if no qmd collection points at the actual `<wiki root>`, or validation cannot be completed, set `retrieval.status` to `"degraded"`, keep the corrected `retrieval.collection_path`, and report the qmd collection repair needed
+6. record the metadata reconciliation in `<wiki root>/log.md`
 
 Allowed direct fixes:
 
@@ -126,9 +140,10 @@ Allowed direct fixes:
 7. adding contradiction or stale-claim notes when wiki already contains the evidence
 8. improving headings or descriptions for index navigability
 9. normalizing internal links to canonical `[[kebab-case-note-name]]` form
-10. moving a misplaced nested `<wiki root>/.obsidian/` directory to the project/workspace root when the destination has no `.obsidian/` directory
+10. moving only a misplaced nested `<wiki root>/.obsidian/` directory to the parent directory root when the destination has no `.obsidian/` directory
+11. reconciling stale `<wiki root>/.wiki-metadata.json` paths to the actual resolved wiki root
 
-Do not: ingest new raw sources, invent facts, silently merge/rename notes, silently delete disagreement/uncertainty, leave redundant `overview.md`, overwrite or merge an existing project-root `.obsidian/`, perform broad rewrites, or modify raw-source files.
+Do not: ingest new raw sources, invent facts, silently merge/rename notes, silently delete disagreement/uncertainty, leave redundant `overview.md`, overwrite or merge an existing parent `.obsidian/`, move or rename `<wiki root>` or any wiki content directory, perform broad rewrites, or modify raw-source files.
 
 ### Record the lint pass
 
@@ -138,7 +153,7 @@ Append to `<wiki root>/log.md`:
 ## [YYYY-MM-DD] lint | <scope>
 ```
 
-Capture: scope, pages created/updated/removed, issues fixed, unresolved contradictions/gaps, legacy root-hub consolidation, Obsidian vault placement fixes or unresolved conflicts, suggested next ingests.
+Capture: scope, pages created/updated/removed, issues fixed, unresolved contradictions/gaps, legacy root-hub consolidation, `.obsidian/` placement fixes or unresolved conflicts, qmd metadata reconciliation or degraded state, suggested next ingests.
 
 Keep `log.md` append-only. Ensure `index.md` reflects the final state before finishing.
 
@@ -184,7 +199,9 @@ If the pass found no significant issues, say so explicitly and still note any re
 - Do not modify raw-source files.
 - Do not turn lint into source ingestion.
 - Treat a separate root `overview.md` as legacy drift. Consolidate into `index.md` and remove during lint.
-- Treat `<wiki root>/.obsidian/` as misplaced vault config when `<wiki root>` is a subdirectory. Move it to the project/workspace root only when that destination has no `.obsidian/` directory.
+- Treat `<wiki root>/.obsidian/` as misplaced Obsidian config when `<wiki root>` is a subdirectory. Move only `.obsidian/` to the parent directory root when that destination has no `.obsidian/` directory.
+- Reconcile stale `.wiki-metadata.json` to the actual resolved wiki root. Lint updates metadata to match the on-disk wiki; it never moves the on-disk wiki to match metadata.
+- Never move or rename `<wiki root>` or any wiki content directory as part of `.obsidian/` placement or qmd metadata repair.
 - Update `<wiki root>/log.md` on every lint pass.
 - Keep the note graph traversable, not just the index accurate.
 - Keep `index.md` aligned with the durable pages that exist after the pass.
