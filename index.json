@@ -25,6 +25,11 @@
       "template": "skills/do-plan/references/template.md"
     },
     {
+      "name": "do-agents",
+      "path": "skills/do-agents/SKILL.md",
+      "description": "Plan or configure an hcom-based agent team, or load and reuse an existing saved config, with topology, routing, and launch guidance"
+    },
+    {
       "name": "do-start",
       "path": "skills/do-start/SKILL.md",
       "description": "Execute the next unblocked task from a plan and optionally file durable findings back into an existing wiki"

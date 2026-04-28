@@ -103,6 +103,8 @@ Once the skills are available, a typical flow looks like this:
 ```text
 /do-research how this app authenticates users
 /do-plan add audit logging for failed sign-ins
+/do-agents plan a worker-reviewer hcom team for a risky refactor
+/do-agents load agents/review-loop.toml for the current branch merge-risk review
 /do-start plans/audit-logging-failed-sign-ins.md
 /do-amend plans/audit-logging-failed-sign-ins.md
 
@@ -139,6 +141,7 @@ The wiki workflow assumes these defaults unless the workspace already has a stro
 | [agent-md-improver](./skills/agent-md-management/skills/agent-md-improver/) | You want to audit or improve `AGENTS.md`, `CLAUDE.md`, or local guidance files so future agent sessions have better working context | A quality report plus targeted guidance-file updates after approval, with `AGENTS.md` preferred for shared neutral guidance and `CLAUDE.md` supported when present |
 | [do-research](./skills/do-research/) | You need evidence before deciding what to build or change | A research note in `plans/research/` with findings, constraints, and the next recommended step, plus optional durable wiki updates when warranted |
 | [do-plan](./skills/do-plan/) | You have a feature, bug fix, or task that should be broken into ordered steps | A plan file in `plans/` with concrete tasks, verification steps, links to any research it used, and optional durable wiki updates when warranted |
+| [do-agents](./skills/do-agents/) | You want an hcom agent-team design, or want to load or reuse an existing saved config before execution | Either new-team `agents/<slug>.toml` and `agents/<slug>.md` artifacts, or loader instructions for a saved config, with roles, routing, intent, and launch guidance |
 | [do-start](./skills/do-start/) | You want the agent to execute the next unblocked task from a plan | Autonomous task execution with verification, plan updates, and optional durable wiki write-back |
 | [do-amend](./skills/do-amend/) | A plan already exists, but requirements or scope changed | An impact analysis, then a safe update to the plan after approval, with optional durable wiki updates when warranted |
 | [do-wiki-build](./skills/do-wiki-build/) | You want a persistent markdown wiki scaffold for a topic, corpus, or research area | An Obsidian-friendly wiki scaffold with raw-source, schema, map-of-content, and log conventions; source-derived notes are added later via `/do-wiki-add` |
@@ -187,6 +190,8 @@ If `plans/research/` or a wiki already exists, `/do-research`, `/do-plan`, `/do-
 ```text
 /do-research how billing webhooks are validated today
 /do-plan add CSV export to the admin orders page
+/do-agents design a mixed-model hcom team for risky implementation work
+/do-agents load agents/review-loop.toml for a current branch review task
 /do-start plans/admin-orders-csv-export.md
 /do-start plans/admin-orders-csv-export.md T3
 /do-start plans/admin-orders-csv-export.md T3,T5
@@ -218,6 +223,7 @@ We now need the CSV export to include refunded orders too.
 - `plans/research/<slug>.md` for reusable research findings
 - `plans/<slug>.md` for the working plan
 - `plans/INDEX.md` for a simple overview of every plan, so you can quickly see what is pending, in progress, or done
+- `agents/<slug>.toml` and `agents/<slug>.md` for new `/do-agents` designs, or loader instructions when you reuse a saved config
 - `raw/` and `wiki/` structures when you use the wiki-building workflow
 - Obsidian-style wiki notes with kebab-case filenames and `[[wikilinks]]`
 - optional durable wiki updates from research, planning, execution, and amendment workflows when a wiki already exists
@@ -243,6 +249,8 @@ After you start using the framework, you will typically have:
 │   └── research/
 └── skills/
     ├── do-amend/
+    │   └── SKILL.md
+    ├── do-agents/
     │   └── SKILL.md
     ├── do-plan/
     │   └── SKILL.md
