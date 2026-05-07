@@ -20,17 +20,28 @@ The companions are **referenced, not required**. These skills work without `supe
 
 ## Prerequisites
 
-- **git**, used to clone this repo. Tarball downloads work, but the install commands below assume you are operating from inside a checkout.
-- **A shell**: any POSIX shell (bash, zsh, ...) for the bash commands, or **PowerShell 5.1+** (built into Windows 10/11) for the PowerShell commands.
-- **Your agent harness installed**: Claude Code, Codex, OpenCode, or `pi`. Skills do nothing on their own — the harness loads them.
-- **Symlink installs on Windows** (optional, see [Linking instead of copying](#linking-instead-of-copying)) require Developer Mode enabled or running PowerShell as Administrator.
+Supported platforms:
 
-Clone this repo first:
+- **macOS** — bash, zsh, or any POSIX shell. macOS 12+ defaults to zsh; the bash blocks below run unchanged in zsh.
+- **Linux** — bash, zsh, or any POSIX shell. Tested on Debian/Ubuntu, Fedora, and Arch families; no distro-specific tweaks needed.
+- **Windows** — PowerShell 5.1+ (built into Windows 10/11) or PowerShell 7+. WSL2 also works — treat the WSL shell as Linux and use the macOS / Linux commands.
+
+You also need:
+
+- **git**, used to clone this repo. Tarball downloads work, but the install commands below assume you are operating from inside a checkout.
+- **Your agent harness installed**: Claude Code, Codex, OpenCode, or `pi`. Skills do nothing on their own — the harness loads them.
+- **Symlink installs on Windows** (optional, see [Linking instead of copying](#linking-instead-of-copying)) require Developer Mode enabled or running PowerShell as Administrator. macOS and Linux symlink without elevation.
+
+Clone this repo first.
+
+macOS / Linux:
 
 ```bash
 git clone https://github.com/<owner>/agent-skills.git
 cd agent-skills
 ```
+
+Windows (PowerShell):
 
 ```powershell
 git clone https://github.com/<owner>/agent-skills.git
@@ -52,28 +63,28 @@ Claude Code looks for skills in:
 - `.claude/skills/` inside a project
 - `~/.claude/skills/` for your personal global skills
 
-Project install (bash):
+Project install — macOS / Linux:
 
 ```bash
 mkdir -p .claude/skills
 cp -R skills/* .claude/skills/
 ```
 
-Project install (PowerShell):
+Project install — Windows (PowerShell):
 
 ```powershell
 New-Item -ItemType Directory -Force -Path .claude\skills | Out-Null
 Copy-Item -Recurse -Force skills\* .claude\skills\
 ```
 
-Global install (bash):
+Global install — macOS / Linux:
 
 ```bash
 mkdir -p ~/.claude/skills
 cp -R skills/* ~/.claude/skills/
 ```
 
-Global install (PowerShell):
+Global install — Windows (PowerShell):
 
 ```powershell
 New-Item -ItemType Directory -Force -Path $HOME\.claude\skills | Out-Null
@@ -90,14 +101,14 @@ Project level:
 
 Codex does not document a native project-local skills folder the same way Claude Code, OpenCode, and `pi` do. For project-specific behavior, use `AGENTS.md` in the repo.
 
-Global install (bash):
+Global install — macOS / Linux:
 
 ```bash
 mkdir -p ~/.codex/skills
 cp -R skills/* ~/.codex/skills/
 ```
 
-Global install (PowerShell):
+Global install — Windows (PowerShell):
 
 ```powershell
 New-Item -ItemType Directory -Force -Path $HOME\.codex\skills | Out-Null
@@ -111,28 +122,28 @@ OpenCode's native skill locations are:
 - `.opencode/skills/` inside a project
 - `~/.config/opencode/skills/` for your personal global skills
 
-Project install (bash):
+Project install — macOS / Linux:
 
 ```bash
 mkdir -p .opencode/skills
 cp -R skills/* .opencode/skills/
 ```
 
-Project install (PowerShell):
+Project install — Windows (PowerShell):
 
 ```powershell
 New-Item -ItemType Directory -Force -Path .opencode\skills | Out-Null
 Copy-Item -Recurse -Force skills\* .opencode\skills\
 ```
 
-Global install (bash):
+Global install — macOS / Linux:
 
 ```bash
 mkdir -p ~/.config/opencode/skills
 cp -R skills/* ~/.config/opencode/skills/
 ```
 
-Global install (PowerShell):
+Global install — Windows (PowerShell):
 
 ```powershell
 New-Item -ItemType Directory -Force -Path $HOME\.config\opencode\skills | Out-Null
@@ -148,28 +159,28 @@ OpenCode can also read `.claude/skills`, but `.opencode/skills` is the native lo
 - `.pi/skills/` inside a project
 - `~/.pi/agent/skills/` for your personal global skills
 
-Project install (bash):
+Project install — macOS / Linux:
 
 ```bash
 mkdir -p .pi/skills
 cp -R skills/* .pi/skills/
 ```
 
-Project install (PowerShell):
+Project install — Windows (PowerShell):
 
 ```powershell
 New-Item -ItemType Directory -Force -Path .pi\skills | Out-Null
 Copy-Item -Recurse -Force skills\* .pi\skills\
 ```
 
-Global install (bash):
+Global install — macOS / Linux:
 
 ```bash
 mkdir -p ~/.pi/agent/skills
 cp -R skills/* ~/.pi/agent/skills/
 ```
 
-Global install (PowerShell):
+Global install — Windows (PowerShell):
 
 ```powershell
 New-Item -ItemType Directory -Force -Path $HOME\.pi\agent\skills | Out-Null
@@ -182,19 +193,22 @@ Copy-Item -Recurse -Force skills\* $HOME\.pi\agent\skills\
 
 `cp -R` / `Copy-Item -Recurse` creates a frozen snapshot. If you `git pull` updates in this repo later, the installed copies will not change until you re-run the install command.
 
-For active development — or if you want `git pull` here to instantly update your installed skills — symlink each skill directory instead:
+For active development — or if you want `git pull` here to instantly update your installed skills — symlink each skill directory instead.
+
+macOS / Linux (no elevation required):
 
 ```bash
-# bash, global Claude Code install via symlinks
+# global Claude Code install via symlinks
 mkdir -p ~/.claude/skills
 for dir in skills/*/; do
   ln -sfn "$(pwd)/${dir%/}" ~/.claude/skills/"$(basename "$dir")"
 done
 ```
 
+Windows (PowerShell — requires Developer Mode enabled OR Administrator):
+
 ```powershell
-# PowerShell, global Claude Code install via symlinks
-# Requires Developer Mode enabled OR running this terminal as Administrator
+# global Claude Code install via symlinks
 New-Item -ItemType Directory -Force -Path $HOME\.claude\skills | Out-Null
 Get-ChildItem -Directory skills | ForEach-Object {
   New-Item -ItemType SymbolicLink `
@@ -207,12 +221,16 @@ Substitute the destination path for Codex, OpenCode, or `pi` as needed.
 
 ## Cherry-picking skills
 
-You don't have to install all 16. To install only a subset, list the directories explicitly:
+You don't have to install all 16. To install only a subset, list the directories explicitly.
+
+macOS / Linux:
 
 ```bash
 # Just the plan/research/start trio (Claude Code global)
 cp -R skills/do-research skills/do-plan skills/do-start ~/.claude/skills/
 ```
+
+Windows (PowerShell):
 
 ```powershell
 # Just the wiki workflow (Claude Code global)
