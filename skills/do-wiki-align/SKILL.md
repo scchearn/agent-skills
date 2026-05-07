@@ -1,6 +1,6 @@
 ---
 name: do-wiki-align
-description: Inspect an existing wiki-like markdown corpus and align it to this repo's Obsidian-friendly note-graph conventions. Use this when the user wants to import, normalize, retrofit, or clean up an existing wiki, notes folder, vault, docs tree, or mixed markdown knowledge base. In monorepos, also use it to align relevant AGENTS.md and CLAUDE.md files. Not for routine wiki maintenance; use /do-wiki-lint for that.
+description: Use when normalizing, retrofitting, or importing an existing wiki, notes folder, vault, or docs tree to this repo's Obsidian-friendly note-graph conventions — produces a proposal-first alignment pass with safe structural fixes. Also aligns AGENTS.md/CLAUDE.md in monorepos. Not for routine maintenance — use /do-wiki-lint for that.
 argument-hint: [--guidance-only] [wiki root or scope]
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash
@@ -22,6 +22,15 @@ The target output is:
 - stronger reciprocal links and fewer isolated notes
 - an explicit `SCHEMA.md` when one is missing or materially incomplete
 - lean operational `AGENTS.md` / `CLAUDE.md` files that point into the wiki for durable deep reference instead of duplicating long, fast-aging technical knowledge
+
+## Companion superpowers skills
+
+If superpowers skills are installed, treat them as recommended (not required) companions:
+
+- `superpowers:writing-skills` — small, well-bounded notes with clear purpose are easier to retrieve and maintain. The same principle that drives skill design drives durable note design.
+- `superpowers:brainstorming` — run before this skill when the alignment target's intent (what is this wiki for, who reads it) is unclear. Aligning the wrong target is expensive to undo.
+
+These skills are referenced for style and discipline. This skill works without them.
 
 ## Input
 

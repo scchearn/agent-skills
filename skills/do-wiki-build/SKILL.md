@@ -1,6 +1,6 @@
 ---
 name: do-wiki-build
-description: Create or extend an Obsidian-friendly markdown wiki scaffold in the current workspace. Use this when the user wants to build a wiki, set up a knowledge base, create a research vault, or scaffold a living markdown note graph before adding sources with `/do-wiki-add`. Not for importing or normalizing an existing wiki-like corpus; use /do-wiki-align for that.
+description: Use when the user wants to build a wiki, set up a knowledge base, create a research vault, or scaffold a living Obsidian-friendly markdown note graph before adding sources with /do-wiki-add. Creates SCHEMA.md, index.md, log.md, and durable-note directory layout. Not for importing or normalizing an existing wiki-like corpus — use /do-wiki-align for that.
 argument-hint: <topic, corpus, or wiki goal>
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Edit, AskUserQuestion, Skill, Bash
@@ -15,6 +15,15 @@ Follow the framework closely:
 - **The schema** is the operating contract that tells future sessions how to maintain the wiki consistently.
 
 Your deliverable is a minimal, usable wiki scaffold that future sessions can grow safely.
+
+## Companion superpowers skills
+
+If superpowers skills are installed, treat them as recommended (not required) companions:
+
+- `superpowers:writing-skills` — the same "small, well-bounded units with clear interfaces" principle applies to durable wiki notes. A note that does too much is a note that won't be reused.
+- `superpowers:brainstorming` — run before this skill when the wiki's purpose, audience, or scope is still fuzzy. Scaffolding the wrong structure is expensive to undo.
+
+These skills are referenced for style and discipline. This skill works without them.
 
 The target shape is an Obsidian-friendly note graph:
 

@@ -1,6 +1,6 @@
 ---
 name: do-wiki-add
-description: Read a local source file or intentionally save conversation context as a conversation-sourced note, then integrate it into an existing Obsidian-friendly markdown wiki. Use this when the user wants to add a source to the wiki, add a document, ingest a local note, transcript, article, report, or PDF, or explicitly preserve the current conversation as a source note. Not for proposal-first session learnings that directly update existing pages; use /do-wiki-learnings.
+description: Use when adding a local source file (note, transcript, article, report, PDF) or intentionally saving the current conversation as a conversation-sourced note into an existing Obsidian-friendly wiki. Creates source/topic/entity/concept notes with reciprocal backlinks, refreshes index.md, appends log.md. Not for proposal-first session learnings against existing pages — use /do-wiki-learnings.
 argument-hint: <local source path | topic or summary from chat>
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash
@@ -18,6 +18,15 @@ The target output is an Obsidian-friendly note graph:
 This skill supports two modes: **file mode** (local file ingestion) and **chat-context mode** (synthesize from the current conversation into a conversation-sourced note). Do not fetch URLs directly in this skill.
 
 If the user wants a **proposal-first review of session learnings** that directly updates existing pages without creating a conversation-source note, use `/do-wiki-learnings` instead.
+
+## Companion superpowers skills
+
+If superpowers skills are installed, treat them as recommended (not required) companions:
+
+- `superpowers:writing-skills` — the "small, well-bounded units" principle applies to durable wiki notes. Prefer many linked notes over a single mega-note.
+- `superpowers:verification-before-completion` — never write a wiki claim without a citation back to the source.
+
+These skills are referenced for style and discipline. This skill works without them.
 
 ## Input
 

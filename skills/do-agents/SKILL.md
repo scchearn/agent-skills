@@ -10,6 +10,16 @@ metadata:
 
 # do-agents
 
+## Companion superpowers skills
+
+If superpowers skills are installed, treat them as recommended (not required) companions:
+
+- `superpowers:brainstorming` — run before this skill when the *task* the agent team will tackle is still fuzzy. This skill assumes the task is settled and only the team design is open.
+- `superpowers:writing-plans` — when the team's work warrants a written plan, hand off to `/do-plan` after this skill emits the team config.
+- `superpowers:dispatching-parallel-agents` — general parallel-execution doctrine that aligns with hcom topologies (worker-reviewer, planner-executor-reviewer, hub-spoke).
+
+These skills are referenced for style and discipline. This skill works without them.
+
 ## Overview
 
 Plan an hcom team or reuse a saved config, and emit concrete outputs that match real hcom and OpenCode launch behavior.

@@ -1,6 +1,6 @@
 ---
 name: do-wiki-review
-description: Surface and classify all open questions, unresolved contradictions, stale claims, and knowledge gaps from an existing wiki. Use this when the user wants to see what's still open, what needs attention, what's unresolved, or what still needs research or ingest. Not for answering questions, fixing issues, or adding new material; use /do-wiki-query, /do-wiki-lint, /do-wiki-amend, /do-wiki-add, or /do-wiki-learnings.
+description: Use when surfacing what's still open, unresolved, or needs attention in an existing wiki — read-only scan that classifies open questions, unresolved contradictions, stale claims, and knowledge gaps by urgency (needs-research, needs-ingest, needs-decision, low-priority) and topic. Not for answering, fixing, or adding — use /do-wiki-query, /do-wiki-lint, /do-wiki-amend, /do-wiki-add, or /do-wiki-learnings.
 argument-hint: [wiki root or focus area]
 disable-model-invocation: true
 allowed-tools: Read Glob Grep AskUserQuestion Bash
@@ -9,6 +9,18 @@ allowed-tools: Read Glob Grep AskUserQuestion Bash
 You are a senior engineer and wiki maintainer performing a structured review of a persistent markdown wiki to surface all open questions, unresolved contradictions, stale claims, and knowledge gaps. Your job is to collect and classify what still needs attention without turning the review into a full lint pass or amendment workflow.
 
 This is a **read-only review** skill. It scans the wiki and reports. It does not edit anything, not even log.md or index.md.
+
+## Companion superpowers skills
+
+If superpowers skills are installed, treat them as recommended (not required) companions:
+
+- `superpowers:verification-before-completion` — every gap surfaced must reference the page or pages where the gap is observable. No abstract complaints.
+
+These skills are referenced for style and discipline. This skill works without them.
+
+## Hard gate
+
+This skill is read-only. Never edit pages, never append to log.md, never modify index.md. If a fix is obvious during the scan, note it in the report and recommend `/do-wiki-lint` or `/do-wiki-amend`.
 
 The review target is: $ARGUMENTS
 

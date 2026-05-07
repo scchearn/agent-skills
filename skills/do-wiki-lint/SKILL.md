@@ -1,6 +1,6 @@
 ---
 name: do-wiki-lint
-description: Run a health check on an existing Obsidian-friendly markdown wiki. Use this when the user wants to lint the wiki, health-check the knowledge base, find orphan pages, spot broken or missing cross-links, clean up stale claims and unresolved wikilinks with safe local fixes, or consolidate a legacy root `overview.md` into `index.md`. Not for adding new material; use /do-wiki-add or /do-wiki-learnings for that.
+description: Use when health-checking an existing Obsidian-friendly wiki — finds orphan pages, broken or missing cross-links, contradictions, stale claims, unresolved wikilinks. Applies safe local fixes; annotates and reports anything needing new evidence. Consolidates legacy root overview.md into index.md. Not for adding new material — use /do-wiki-add or /do-wiki-learnings.
 argument-hint: [wiki root or focus area]
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash
@@ -21,6 +21,15 @@ Use the LLM Wiki maintenance model:
 - preserve unresolved gaps so future sessions know what still needs evidence
 
 Apply safe, local fixes directly. For issues that need new evidence or substantive judgment, annotate and report them instead of guessing.
+
+## Companion superpowers skills
+
+If superpowers skills are installed, treat them as recommended (not required) companions:
+
+- `superpowers:verification-before-completion` — never claim a fix without confirming the change resolved the underlying issue (link now resolves, contradiction now reconciled, orphan now linked).
+- `superpowers:systematic-debugging` — when a contradiction or stale claim has unclear root cause, run the disciplined investigation rather than patching surface symptoms.
+
+These skills are referenced for style and discipline. This skill works without them.
 
 ## Input
 

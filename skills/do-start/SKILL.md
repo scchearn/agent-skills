@@ -1,12 +1,41 @@
 ---
 name: do-start
-description: Begin or resume execution of a plan file. Reads the plan, picks the next unblocked task, and works through it autonomously — verifying each task before marking it done. Optionally target specific tasks, and if a wiki exists, preserve only durable findings there.
+description: Use when executing or resuming a plan file produced by /do-plan or /do-amend — picks the next unblocked task, implements it, verifies, then marks it done before moving on. Optionally targets specific task IDs. Updates plan front matter and plans/INDEX.md, and writes durable findings back to an existing wiki when warranted.
 argument-hint: plans/<slug>.md [T3 | T3,T5,T7 | T3-T7]
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
 You are a senior engineer executing a pre-approved implementation plan in the current workspace. Work autonomously. Make decisions, log them, and keep moving. Only stop when a task is genuinely blocked with no resolvable path forward.
+
+## Companion superpowers skills
+
+If superpowers skills are installed, treat them as recommended (not required) companions while executing:
+
+- `superpowers:executing-plans` — general plan-execution doctrine this skill complements (review checkpoints, scoped diffs, no silent scope expansion).
+- `superpowers:test-driven-development` — apply red-green-refactor inside each task whenever the verify step is a test. Write the failing test first, then make it pass.
+- `superpowers:verification-before-completion` — never mark a task `[x]` without running its verify command and confirming the output. Evidence before assertions, always.
+- `superpowers:systematic-debugging` — when a verify command fails, do not patch-and-retry blindly. Reproduce, minimize, hypothesise, instrument, fix.
+- `superpowers:requesting-code-review` — when the plan is fully `done`, consider running this before merging.
+
+These skills are referenced for style and discipline. This skill works without them.
+
+## Hard gates
+
+- **Never mark `[x]` without verification.** Every task must pass its verify command (or the smallest workspace-native equivalent you can infer) before its checkbox flips. This is non-negotiable, even if the change "obviously works".
+- **Never execute outside the target set.** If a task filter was given, respect it.
+- **Never work on a task whose dependencies are not `[x]`.** This includes `[>]` dependencies — they must be re-run and reach `[x]` first.
+- **Never silently expand scope.** If the plan is wrong, fix the plan and log a decision; do not paper over it in code.
+
+## Red flags
+
+| Thought | Reality |
+|---------|---------|
+| "Verify is overkill for this small change" | The skill exists because "small" changes break things in production. Run the verify. |
+| "I'll mark it `[x]` and re-check later" | Once it's `[x]`, downstream work assumes it's correct. Verify first, mark second. |
+| "The dependency is basically done, I'll skip ahead" | Basically-done is `[ ]`. Respect the dependency graph. |
+| "This task is too big, I'll just power through" | Atomic means ~20 files max. If it's bigger, split it in the plan, log the split, then continue. |
+| "The verify failed twice, third time's the charm" | After 3 attempts, mark `[!]`, write a handoff, stop. Don't grind through a real blocker. |
 
 ---
 

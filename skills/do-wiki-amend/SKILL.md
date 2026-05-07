@@ -1,6 +1,6 @@
 ---
 name: do-wiki-amend
-description: Correct or update existing wiki content when newer evidence shows the wiki is wrong, stale, incomplete, or contradicted. Use this when the agent discovers the wiki says X but we now know Y, when code or real-world changes invalidate a wiki claim, or when the user asks to fix or amend the wiki. Not for adding new sources, routine learnings capture, structural normalization, or health checks; use /do-wiki-add, /do-wiki-learnings, /do-wiki-align, or /do-wiki-lint.
+description: Use when newer evidence shows the wiki is wrong, stale, incomplete, or contradicted — corrects affected pages without erasing history (strikethrough old claims, superseded markers, contradiction notes). Triggers when the agent discovers the wiki says X but we now know Y, when code or real-world changes invalidate a claim, or when the user says "the wiki is wrong about X". Not for new-source ingestion or structural normalization — use /do-wiki-add, /do-wiki-learnings, /do-wiki-align, or /do-wiki-lint.
 argument-hint: <what changed or what needs correcting>
 disable-model-invocation: true
 allowed-tools: Read Glob Grep Write Edit Bash
@@ -11,6 +11,15 @@ You are a senior engineer and disciplined wiki maintainer correcting or updating
 This skill is the **corrective counterpart** to `/do-wiki-add`. Use `/do-wiki-add` for new-source ingestion. Use `/do-wiki-amend` when existing wiki content needs correction.
 
 The wiki is expected to behave like an Obsidian-friendly note graph. Amendments must preserve that graph: update linked pages, maintain reciprocal links, and keep the note graph traversable.
+
+## Companion superpowers skills
+
+If superpowers skills are installed, treat them as recommended (not required) companions:
+
+- `superpowers:receiving-code-review` — treat new contradicting evidence the same way as code-review feedback: verify the critique on its merits, don't perform-agree, don't blindly overwrite. The wiki's old claim might still be partially right.
+- `superpowers:verification-before-completion` — cite the new evidence in the amendment. No "trust me" corrections.
+
+These skills are referenced for style and discipline. This skill works without them.
 
 ## Input
 

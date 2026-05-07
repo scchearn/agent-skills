@@ -8,6 +8,16 @@ The wiki skills are designed for an Obsidian-style environment: durable notes us
 
 When a wiki already exists, the non-wiki workflow skills can consult it as a durable memory layer and may write back only findings that are worth preserving. Current repo state and primary docs still win if the wiki is stale or wrong.
 
+## Alignment with `superpowers`
+
+The skills in this repo are written to coexist with the `superpowers` skill family. Each `SKILL.md` includes:
+
+- a `Use when …` style trigger in the front matter `description`
+- a **Companion superpowers skills** section pointing at relevant `superpowers:*` (and `claude-md-management:*`) skills for added discipline
+- explicit **Hard gate** and **Red flags** callouts on the higher-stakes workflow skills (`do-plan`, `do-start`, `do-amend`, `do-wiki-learnings`, `do-wiki-review`, `agent-md-improver`)
+
+The companions are **referenced, not required**. These skills work without `superpowers` installed; when it is installed, prefer its discipline (brainstorming before scoping, TDD inside execution, verification-before-completion, systematic-debugging on failed verifies) on top of the workflow this repo provides.
+
 ## Installation
 
 Use the matching global or project-level setup below.

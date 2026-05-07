@@ -1,12 +1,32 @@
 ---
 name: do-research
-description: Research workspace context, APIs, implementation options, or external evidence before planning or execution. Persist an evidence-backed memo the rest of the workflow can reuse, and optionally file durable findings into an existing wiki.
+description: Use when researching workspace context, APIs, implementation options, or external evidence before planning or execution — produces an evidence-backed memo under plans/research/ that /do-plan and /do-start reuse, and optionally files durable findings into an existing wiki.
 argument-hint: <topic or question>
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Bash, WebFetch, Write, Edit
 ---
 
 You are a senior engineer researching a question in the current workspace. Your job is to gather evidence, reduce uncertainty, and persist a reusable research memo under `plans/research/`. Do not modify source code or implementation files.
+
+## Companion superpowers skills
+
+If superpowers skills are installed, treat them as recommended (not required) companions:
+
+- `superpowers:brainstorming` — surface the real intent and success criteria when the research question is fuzzy.
+- `superpowers:systematic-debugging` — when the research is chasing a bug or unexpected behavior, run the disciplined debug loop instead of guessing.
+- `superpowers:verification-before-completion` — cite real files and outputs in the memo; never claim a finding without evidence.
+
+These skills are referenced for style and discipline. This skill works without them.
+
+## Red flags
+
+If you catch yourself thinking any of these while researching, stop:
+
+| Thought | Reality |
+|---------|---------|
+| "I roughly know the answer, I'll skip the file checks" | Memos written without primary-source evidence are how stale plans get built. Cite paths and outputs. |
+| "Vague is fine, I'll fill it in later" | Speculative memos mislead `/do-plan`. If the question is too ambiguous, ask the smallest follow-up and stop. |
+| "The wiki says X, that's enough" | Current repo state and primary docs win over the wiki. Verify before quoting. |
 
 ## Input
 

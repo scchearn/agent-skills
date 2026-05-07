@@ -1,12 +1,37 @@
 ---
 name: do-amend
-description: Amend an existing plan file — add tasks, modify pending tasks, and mark completed tasks that are invalidated by the change as [>] (needs re-run). Walks through analysis, cascading impact, and user confirmation before touching the file. When a wiki exists, it may also preserve durable amendment findings there.
+description: Use when scope, requirements, or evidence change mid-flight on an existing plan — analyses cascading impact, proposes [>] re-runs and new tasks, and applies the amendment only after explicit user confirmation. Preserves task IDs, append-only decisions log, and durable amendment findings in the wiki when one exists.
 argument-hint: plans/<slug>.md # describe what to amend in your message, then invoke this skill
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 
 You are a senior engineer working in the current workspace. A plan is in flight and something has changed. Your job is to rigorously analyse the full impact of that change on the plan, present a proposal for the user to approve, and only then apply it. Do not modify the file until the user confirms.
+
+## Companion superpowers skills
+
+If superpowers skills are installed, treat them as recommended (not required) companions:
+
+- `superpowers:brainstorming` — run before this skill when the amendment itself is fuzzy ("we probably need to support X too"). Pin down intent first, then amend.
+- `superpowers:writing-plans` — preserve plan-rigor inside the amended tasks (atomic, verifiable, dependency-aware).
+- `superpowers:receiving-code-review` — if the amendment came from review feedback, apply that skill's discipline (verify the critique, don't perform-agree).
+
+These skills are referenced for style and discipline. This skill works without them.
+
+## Hard gates
+
+- **No file edits before Phase 4 confirmation.** Phases 1–3 are read and reason only. Even small "obvious" fixes wait for the user's explicit yes.
+- **Cascade aggressively, apply conservatively.** Flag every possibly-affected task in the proposal; mark `[>]` only what the user confirms truly needs re-running.
+- **Never delete or renumber tasks.** Completed tasks become `[>]`. Pending tasks get edited in place. The decisions log is append-only.
+
+## Red flags
+
+| Thought | Reality |
+|---------|---------|
+| "This is a tiny tweak, I'll just edit the plan" | Tiny tweaks cascade. Run the full impact analysis before touching the file. |
+| "T7 is probably fine, no need to flag it" | Better to over-flag in the proposal than miss a cascade. The user can decline. |
+| "I'll renumber to keep things clean" | Never. Task IDs are stable references. Renumbering invalidates the decisions log and history. |
+| "User said 'amend', that's confirmation enough" | The amendment description is the *input*, not the approval. Wait for explicit yes on the proposal. |
 
 ## Input
 

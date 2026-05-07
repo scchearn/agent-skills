@@ -1,6 +1,6 @@
 ---
 name: do-wiki-query
-description: Answer questions against an existing Obsidian-friendly markdown wiki. Use this whenever the user is asking what is happening in the project, directory, codebase, architecture, workflow, decisions, or current state and the wiki likely contains the answer, even if they do not explicitly mention the wiki. Also use it for summaries, comparisons, and reusable analyses grounded in current wiki pages. Not for surfacing unresolved gaps; use /do-wiki-review for that.
+description: Use when answering a question against an existing Obsidian-friendly wiki — applies whenever the user asks about project, codebase, architecture, workflow, decisions, or current state and the wiki likely contains the answer, even if they do not mention the wiki by name. Cites pages, optionally files durable analyses back into the wiki. Not for surfacing unresolved gaps — use /do-wiki-review.
 argument-hint: <question>
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash
@@ -11,6 +11,15 @@ You are a senior engineer and wiki maintainer answering a question from a persis
 The wiki is expected to behave like an Obsidian-friendly note graph, so durable query write-backs should strengthen that graph instead of creating isolated files.
 
 This is a **wiki-first query** skill, not a general web research skill. Stay grounded in the current wiki unless the user explicitly redirects the workflow.
+
+## Companion superpowers skills
+
+If superpowers skills are installed, treat them as recommended (not required) companions:
+
+- `superpowers:verification-before-completion` — every claim in the answer must cite the wiki page that supports it. No uncited synthesis.
+- `superpowers:brainstorming` — when the question is fuzzy ("what should we do about X?"), shift into brainstorming first. This skill answers; it does not decide.
+
+These skills are referenced for style and discipline. This skill works without them.
 
 ## Input
 

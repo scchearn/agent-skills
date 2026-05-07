@@ -1,12 +1,21 @@
 ---
 name: revise-agent-md
-description: Update agent guidance markdown files with learnings from the current session. Use when a session uncovered missing context, useful commands, testing patterns, environment quirks, or gotchas that should be captured for future agents.
+description: Use when the current session uncovered missing context, useful commands, testing patterns, environment quirks, or gotchas worth capturing in AGENTS.md, CLAUDE.md, or .claude.local.md so future agent sessions inherit them.
 tools: Read, Glob, Grep, Edit
 ---
 
 # Revise Agent Markdown
 
 Review the current session for learnings about working in this codebase. Update the relevant agent guidance markdown file with context that would help future agent sessions be more effective.
+
+## Companion superpowers skills
+
+If superpowers skills are installed, treat them as recommended (not required) companions:
+
+- `claude-md-management:revise-claude-md` — superpowers' equivalent for `CLAUDE.md`; same reflect-then-update pattern. Pair when the learnings are Claude-specific.
+- `superpowers:verification-before-completion` — every learning written to guidance must be verifiable in the current session (a command that worked, a file that exists, a gotcha that actually bit). No speculative additions.
+
+These skills are referenced for style and discipline. This skill works without them.
 
 ## Step 1: Reflect
 

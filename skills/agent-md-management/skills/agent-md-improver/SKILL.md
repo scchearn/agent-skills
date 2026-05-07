@@ -10,6 +10,20 @@ Audit, evaluate, and improve agent guidance markdown files across a codebase so 
 
 **This skill can write to guidance files.** After presenting a quality report and getting user approval, it updates `AGENTS.md`, `CLAUDE.md`, or `.claude.local.md` with targeted improvements.
 
+## Companion superpowers skills
+
+If superpowers skills are installed, treat them as recommended (not required) companions:
+
+- `claude-md-management:claude-md-improver` — superpowers' equivalent for `CLAUDE.md` audits; same audit-then-update pattern with Claude-specific templates. This skill prefers `AGENTS.md` for shared neutral guidance; pair with `claude-md-improver` when the repo is Claude-specific.
+- `claude-md-management:revise-claude-md` — pair with `revise-agent-md` when the session uncovered durable learnings worth capturing in guidance.
+- `superpowers:verification-before-completion` — never claim a guidance file is "improved" without rereading it post-edit and confirming the targeted issues are resolved.
+
+These skills are referenced for style and discipline. This skill works without them.
+
+## Hard gate
+
+Do not write to any guidance file before presenting the quality report and getting explicit user approval. Phase 1 (Discovery) and Phase 2 (Quality Assessment) are read-only.
+
 ## Workflow
 
 ### Phase 1: Discovery

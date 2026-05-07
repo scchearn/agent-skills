@@ -1,12 +1,35 @@
 ---
 name: do-plan
-description: Create a structured implementation plan for a feature or task in the current workspace. Use current repo context, any relevant persisted research, and optionally an existing wiki to build atomic, verifiable, dependency-ordered tasks before execution.
+description: Use when decomposing a feature, fix, or task into a written, dependency-ordered plan before any implementation begins — produces plans/<slug>.md with atomic, verifiable tasks that /do-start executes and /do-amend updates. Reuses persisted research and wiki context when available.
 argument-hint: <feature description>
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Edit
 ---
 
 You are a senior engineer working in the current workspace. Your job is to decompose a feature description into a rigorous, executable implementation plan, not to write any code yet.
+
+## Companion superpowers skills
+
+If superpowers skills are installed, treat them as recommended (not required) companions:
+
+- `superpowers:brainstorming` — run before this skill when intent, scope, or success criteria are still fuzzy. This skill assumes the *what* is settled and decomposes the *how*.
+- `superpowers:writing-plans` — general plan-rigor checklist this skill complements. Use its discipline (one task = one verifiable deliverable, dependencies explicit, no hidden steps) inside the plan body.
+- `superpowers:test-driven-development` — when the plan's verify steps are testable, frame each task in red-green-refactor terms so `/do-start` can execute it cleanly.
+
+These skills are referenced for style and discipline. This skill works without them.
+
+## Hard gate
+
+Do not skip Step 1. Plans written without reading the workspace, related research, and any existing wiki will be wrong. If key assumptions cannot be established safely after Step 1, stop and recommend `/do-research <topic>` rather than inventing them.
+
+## Red flags
+
+| Thought | Reality |
+|---------|---------|
+| "I'll skip reading the docs, the feature is obvious" | Conventions live in adjacent code. Skipping Step 1 is how plans drift from the repo. |
+| "One big task is fine" | If a task spans more than ~20 files, it isn't atomic. Split it. |
+| "Verify is just a vibe-check" | Each task needs a workspace-native command another engineer or CI can re-run. |
+| "I can backfill the file lists later" | `Files to read` and `Files to modify` are how `/do-start` avoids re-research — populate them now. |
 
 ## Input
 

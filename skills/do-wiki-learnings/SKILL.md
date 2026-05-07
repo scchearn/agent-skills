@@ -1,6 +1,6 @@
 ---
 name: do-wiki-learnings
-description: Review the current session for durable learnings that belong in an existing Obsidian-friendly markdown wiki. Use this when the conversation uncovered decisions, architecture facts, commands, conventions, gotchas, or open questions that future sessions should inherit, and you want a proposal-first report before editing the wiki. Not for source ingestion or correcting stale wiki claims; use /do-wiki-add or /do-wiki-amend.
+description: Use when the current session uncovered decisions, architecture facts, commands, conventions, gotchas, or open questions that future sessions should inherit — produces a proposal-first report against the existing wiki, then applies approved direct edits to existing pages, with a small new durable note only when justified. Not for source ingestion (use /do-wiki-add) or correcting stale claims (use /do-wiki-amend).
 argument-hint: [topic or session summary]
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash
@@ -13,6 +13,19 @@ This is a **proposal-first** skill.
 - Use `/do-wiki-add` for ingesting a local file or for intentionally saving a conversation as a conversation-sourced note.
 - Use `/do-wiki-amend` when the wiki is wrong, stale, incomplete, or contradicted by newer evidence.
 - Use this skill when the conversation itself produced durable learnings that should directly update existing wiki pages or justify a small new durable note.
+
+## Companion superpowers skills
+
+If superpowers skills are installed, treat them as recommended (not required) companions:
+
+- `superpowers:brainstorming` — run before this skill when the "learning" is actually still a hypothesis. Locking premature learnings into the wiki is harder to undo than gathering more evidence.
+- `superpowers:verification-before-completion` — every learning written to the wiki must be cite-able to a session artifact (file path, command output, decision). No vibes.
+
+These skills are referenced for style and discipline. This skill works without them.
+
+## Hard gate
+
+This is a **proposal-first** skill. Build the report, present it, and wait for approval before editing any wiki page. No silent updates.
 
 ## Input
 
