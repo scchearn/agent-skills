@@ -18,9 +18,32 @@ The skills in this repo are written to coexist with the `superpowers` skill fami
 
 The companions are **referenced, not required**. These skills work without `superpowers` installed; when it is installed, prefer its discipline (brainstorming before scoping, TDD inside execution, verification-before-completion, systematic-debugging on failed verifies) on top of the workflow this repo provides.
 
+## Prerequisites
+
+- **git**, used to clone this repo. Tarball downloads work, but the install commands below assume you are operating from inside a checkout.
+- **A shell**: any POSIX shell (bash, zsh, ...) for the bash commands, or **PowerShell 5.1+** (built into Windows 10/11) for the PowerShell commands.
+- **Your agent harness installed**: Claude Code, Codex, OpenCode, or `pi`. Skills do nothing on their own — the harness loads them.
+- **Symlink installs on Windows** (optional, see [Linking instead of copying](#linking-instead-of-copying)) require Developer Mode enabled or running PowerShell as Administrator.
+
+Clone this repo first:
+
+```bash
+git clone https://github.com/<owner>/agent-skills.git
+cd agent-skills
+```
+
+```powershell
+git clone https://github.com/<owner>/agent-skills.git
+Set-Location agent-skills
+```
+
 ## Installation
 
-Use the matching global or project-level setup below.
+This repo ships **16 skill directories** under `skills/`. The install commands copy them into the location your harness loads from.
+
+> **Conflict behaviour:** the `cp -R` and `Copy-Item -Recurse -Force` commands below **overwrite** any same-named skill at the destination. To refuse to overwrite, use `cp -Rn skills/* <dest>/` (bash) or omit `-Force` (PowerShell). See [Naming Collisions](#naming-collisions) for the broader story.
+
+Pick the harness section that matches your tool. Each section gives a project-local install (skills available only in this repo) and a global install (skills available everywhere on your machine).
 
 ### Claude Code
 
@@ -29,18 +52,32 @@ Claude Code looks for skills in:
 - `.claude/skills/` inside a project
 - `~/.claude/skills/` for your personal global skills
 
-Project install:
+Project install (bash):
 
 ```bash
 mkdir -p .claude/skills
 cp -R skills/* .claude/skills/
 ```
 
-Global install:
+Project install (PowerShell):
+
+```powershell
+New-Item -ItemType Directory -Force -Path .claude\skills | Out-Null
+Copy-Item -Recurse -Force skills\* .claude\skills\
+```
+
+Global install (bash):
 
 ```bash
 mkdir -p ~/.claude/skills
 cp -R skills/* ~/.claude/skills/
+```
+
+Global install (PowerShell):
+
+```powershell
+New-Item -ItemType Directory -Force -Path $HOME\.claude\skills | Out-Null
+Copy-Item -Recurse -Force skills\* $HOME\.claude\skills\
 ```
 
 ### Codex
@@ -53,11 +90,18 @@ Project level:
 
 Codex does not document a native project-local skills folder the same way Claude Code, OpenCode, and `pi` do. For project-specific behavior, use `AGENTS.md` in the repo.
 
-Global install:
+Global install (bash):
 
 ```bash
 mkdir -p ~/.codex/skills
 cp -R skills/* ~/.codex/skills/
+```
+
+Global install (PowerShell):
+
+```powershell
+New-Item -ItemType Directory -Force -Path $HOME\.codex\skills | Out-Null
+Copy-Item -Recurse -Force skills\* $HOME\.codex\skills\
 ```
 
 ### OpenCode
@@ -67,18 +111,32 @@ OpenCode's native skill locations are:
 - `.opencode/skills/` inside a project
 - `~/.config/opencode/skills/` for your personal global skills
 
-Project install:
+Project install (bash):
 
 ```bash
 mkdir -p .opencode/skills
 cp -R skills/* .opencode/skills/
 ```
 
-Global install:
+Project install (PowerShell):
+
+```powershell
+New-Item -ItemType Directory -Force -Path .opencode\skills | Out-Null
+Copy-Item -Recurse -Force skills\* .opencode\skills\
+```
+
+Global install (bash):
 
 ```bash
 mkdir -p ~/.config/opencode/skills
 cp -R skills/* ~/.config/opencode/skills/
+```
+
+Global install (PowerShell):
+
+```powershell
+New-Item -ItemType Directory -Force -Path $HOME\.config\opencode\skills | Out-Null
+Copy-Item -Recurse -Force skills\* $HOME\.config\opencode\skills\
 ```
 
 OpenCode can also read `.claude/skills`, but `.opencode/skills` is the native location.
@@ -90,25 +148,130 @@ OpenCode can also read `.claude/skills`, but `.opencode/skills` is the native lo
 - `.pi/skills/` inside a project
 - `~/.pi/agent/skills/` for your personal global skills
 
-Project install:
+Project install (bash):
 
 ```bash
 mkdir -p .pi/skills
 cp -R skills/* .pi/skills/
 ```
 
-Global install:
+Project install (PowerShell):
+
+```powershell
+New-Item -ItemType Directory -Force -Path .pi\skills | Out-Null
+Copy-Item -Recurse -Force skills\* .pi\skills\
+```
+
+Global install (bash):
 
 ```bash
 mkdir -p ~/.pi/agent/skills
 cp -R skills/* ~/.pi/agent/skills/
 ```
 
+Global install (PowerShell):
+
+```powershell
+New-Item -ItemType Directory -Force -Path $HOME\.pi\agent\skills | Out-Null
+Copy-Item -Recurse -Force skills\* $HOME\.pi\agent\skills\
+```
+
 `pi` can also load extra skill paths from `.pi/settings.json` or `~/.pi/agent/settings.json`.
+
+## Linking instead of copying
+
+`cp -R` / `Copy-Item -Recurse` creates a frozen snapshot. If you `git pull` updates in this repo later, the installed copies will not change until you re-run the install command.
+
+For active development — or if you want `git pull` here to instantly update your installed skills — symlink each skill directory instead:
+
+```bash
+# bash, global Claude Code install via symlinks
+mkdir -p ~/.claude/skills
+for dir in skills/*/; do
+  ln -sfn "$(pwd)/${dir%/}" ~/.claude/skills/"$(basename "$dir")"
+done
+```
+
+```powershell
+# PowerShell, global Claude Code install via symlinks
+# Requires Developer Mode enabled OR running this terminal as Administrator
+New-Item -ItemType Directory -Force -Path $HOME\.claude\skills | Out-Null
+Get-ChildItem -Directory skills | ForEach-Object {
+  New-Item -ItemType SymbolicLink `
+    -Path (Join-Path $HOME\.claude\skills $_.Name) `
+    -Target $_.FullName -Force | Out-Null
+}
+```
+
+Substitute the destination path for Codex, OpenCode, or `pi` as needed.
+
+## Cherry-picking skills
+
+You don't have to install all 16. To install only a subset, list the directories explicitly:
+
+```bash
+# Just the plan/research/start trio (Claude Code global)
+cp -R skills/do-research skills/do-plan skills/do-start ~/.claude/skills/
+```
+
+```powershell
+# Just the wiki workflow (Claude Code global)
+Copy-Item -Recurse -Force `
+  skills\do-wiki-build, skills\do-wiki-add, skills\do-wiki-align, `
+  skills\do-wiki-amend, skills\do-wiki-learnings, skills\do-wiki-lint, `
+  skills\do-wiki-query, skills\do-wiki-review `
+  $HOME\.claude\skills\
+```
+
+The `do-*` skills are mostly self-contained but cross-reference each other (e.g. `/do-plan` reuses `/do-research` output). Installing a single skill works; installing a clean workflow slice (research+plan+start, or the wiki cluster) is usually more useful.
+
+## Verifying the install
+
+After running the install command, confirm your harness sees the skills.
+
+**Claude Code:** start a session, type `/do-` at the prompt, and look for slash-command completions (`/do-research`, `/do-plan`, etc.). If nothing autocompletes, the skills are not on the search path. Run `/help` for the full skill list as a fallback.
+
+**Codex / OpenCode / `pi`:** check the harness's own skill-listing command (varies by harness) or invoke a low-stakes skill as a smoke test:
+
+```text
+/do-research what does this repository do
+```
+
+If the skill runs and writes `plans/research/<slug>.md`, the install worked.
+
+## Updating
+
+This repo evolves. To pull in upstream changes:
+
+```bash
+cd <wherever you cloned agent-skills>
+git pull
+```
+
+Then **re-run the install command** for your harness to copy the updated skills into place. If you used the symlink approach in [Linking instead of copying](#linking-instead-of-copying), `git pull` is all you need — symlinks stay current automatically.
+
+## Optional: install the `superpowers` companion
+
+The skills here cross-reference the `superpowers:*` skill family for added discipline (brainstorming before scoping, TDD inside execution, verification-before-completion, systematic-debugging on failed verifies). The references are non-binding — the do-\* skills run fine without `superpowers` installed.
+
+If you want the companions, install `superpowers` from Anthropic's official Claude Code plugin marketplace. Once it is on your harness's search path, the cross-references in each `SKILL.md` resolve automatically.
+
+## About the `agent-md-management` plugin manifest
+
+`skills/agent-md-management/` ships with a `.claude-plugin/plugin.json` manifest because it bundles two related skills (`agent-md-improver`, `revise-agent-md`). On harnesses that auto-discover plugin manifests (Claude Code), the manifest is harmless — the inner skills are still loaded. On harnesses that do not, the manifest is ignored and the skills load directly from their `SKILL.md` files. Either way the skills work; you do not need to do anything special.
 
 ## Quick Start
 
-Once the skills are available, a typical flow looks like this:
+The core implementation workflow is three commands, in order:
+
+```text
+/do-research <topic>   →   /do-plan <task>   →   /do-start plans/<slug>.md
+       (evidence)            (decomposition)         (execution)
+```
+
+`/do-amend plans/<slug>.md` updates an in-flight plan when scope shifts.
+
+A fuller picture of what the skills support:
 
 ```text
 /do-research how this app authenticates users
@@ -258,32 +421,53 @@ After you start using the framework, you will typically have:
 │   ├── INDEX.md
 │   └── research/
 └── skills/
+    ├── agent-md-management/
+    │   ├── .claude-plugin/
+    │   │   └── plugin.json
+    │   ├── README.md
+    │   └── skills/
+    │       ├── agent-md-improver/
+    │       │   ├── SKILL.md
+    │       │   └── references/
+    │       └── revise-agent-md/
+    │           └── SKILL.md
+    ├── do-agents/
+    │   ├── SKILL.md
+    │   ├── assets/
+    │   ├── evals/
+    │   └── references/
     ├── do-amend/
     │   └── SKILL.md
-    ├── do-agents/
-    │   └── SKILL.md
     ├── do-plan/
-    │   └── SKILL.md
+    │   ├── SKILL.md
+    │   └── references/
     ├── do-research/
-    │   └── SKILL.md
-    ├── do-wiki-build/
-    │   └── SKILL.md
-    ├── do-wiki-align/
-    │   └── SKILL.md
-    ├── do-wiki-add/
-    │   └── SKILL.md
-    ├── do-wiki-learnings/
-    │   └── SKILL.md
-    ├── do-wiki-amend/
-    │   └── SKILL.md
-    ├── do-wiki-lint/
-    │   └── SKILL.md
-    ├── do-wiki-query/
-    │   └── SKILL.md
-    ├── do-wiki-review/
     │   └── SKILL.md
     ├── do-start/
     │   └── SKILL.md
+    ├── do-wiki-add/
+    │   ├── SKILL.md
+    │   └── references/
+    ├── do-wiki-align/
+    │   ├── SKILL.md
+    │   └── references/
+    ├── do-wiki-amend/
+    │   ├── SKILL.md
+    │   └── references/
+    ├── do-wiki-build/
+    │   ├── SKILL.md
+    │   └── references/
+    ├── do-wiki-learnings/
+    │   ├── SKILL.md
+    │   └── references/
+    ├── do-wiki-lint/
+    │   ├── SKILL.md
+    │   └── references/
+    ├── do-wiki-query/
+    │   └── SKILL.md
+    ├── do-wiki-review/
+    │   ├── SKILL.md
+    │   └── references/
     └── setup-obsidian-vault/
         ├── SKILL.md
         ├── scripts/
