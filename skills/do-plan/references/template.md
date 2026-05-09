@@ -17,6 +17,12 @@ completed_at: null
 
 _None linked._
 
+## Related specs
+
+<!-- Link only the spec files actually used while planning. -->
+
+_None linked._
+
 ## Goal
 
 <One sentence: what does "done" look like? What is the observable end state?>
@@ -29,27 +35,30 @@ _None linked._
 
 ## Tasks
 
-<!-- Status key: [ ] pending | [~] in-progress | [x] done | [!] blocked | [>] needs re-run -->
+<!-- Status key: [ ] pending | [~] in-progress | [h] delegated to hcom | [x] done | [!] blocked | [>] needs re-run -->
 <!-- Each task must be atomic (roughly 1–20 files), verifiable, and dependency-aware. -->
 <!-- "Depends on" references task IDs (T1, T2, etc.) by their heading. -->
+<!-- "Execution" is optional. Prefer: topology: <topology> | agent: <tag> | worktree: <path> | branch: <name> | model: <provider/model> | rules: <behavioral rules>. Use "same agent as Tn" for continuation tasks. Advisory-only topology text is allowed, but /do-start may fall back to inline execution when concrete launch fields are missing. -->
 
 ### T1 — <title>
 
 - **Status:** [ ]
 - **Depends on:** none
-- **Verify:** `<focused workspace-native automated check>`
-- **Files to read:** <!-- research memos, docs, existing source files, tests, contracts, or other references to consult before starting this task -->
-- **Files to modify:** <!-- source files this task will create or change -->
-- **Notes:**
+- **Execution:** <!-- Optional. Prefer: topology: <topology> | agent: <tag> | worktree: <path> | branch: <name> | model: <provider/model> | rules: <behavioral rules>. Use "same agent as Tn" for continuation tasks. Remove this line if single-agent execution is appropriate. -->
+- **Verify:** `<focused workspace-native automated command; avoid vague entries like "run tests">`
+- **Files to read:** <!-- concrete workspace-relative paths only; include research memos, docs, source files, tests, contracts, or examples. Do not write vague placeholders like "relevant files". -->
+- **Files to modify:** <!-- concrete workspace-relative paths only; list every file expected to change or be created. Do not write vague placeholders like "implementation files". -->
+- **Notes:** <!-- 1-3 bullets describing what this task delivers, key constraints, and any required follow-through. Do not leave blank or write TBD. -->
 
 ### T2 — <title>
 
 - **Status:** [ ]
 - **Depends on:** T1
-- **Verify:** `<focused workspace-native automated check>`
-- **Files to read:** <!-- research memos, docs, existing source files, tests, contracts, or other references to consult before starting this task -->
-- **Files to modify:** <!-- source files this task will create or change -->
-- **Notes:**
+- **Execution:** <!-- Optional. Use the same structured format as T1, or "same agent as T1" / "same agent as Tn" for continuation tasks. Remove if single-agent. -->
+- **Verify:** `<focused workspace-native automated command; avoid vague entries like "run tests">`
+- **Files to read:** <!-- concrete workspace-relative paths only; include research memos, docs, source files, tests, contracts, or examples. Do not write vague placeholders like "relevant files". -->
+- **Files to modify:** <!-- concrete workspace-relative paths only; list every file expected to change or be created. Do not write vague placeholders like "implementation files". -->
+- **Notes:** <!-- 1-3 bullets describing what this task delivers, key constraints, and any required follow-through. Do not leave blank or write TBD. -->
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: do-amend
-description: Amend an existing plan file — add tasks, modify pending tasks, and mark completed tasks that are invalidated by the change as [>] (needs re-run). Walks through analysis, cascading impact, and user confirmation before touching the file. When a wiki exists, it may also preserve durable amendment findings there.
+description: Amend an existing plan file — add tasks, modify pending or delegated tasks, and mark completed tasks that are invalidated by the change as [>] (needs re-run). Walks through analysis, cascading impact, and user confirmation before touching the file. When a wiki exists, it may also preserve durable amendment findings there.
 argument-hint: plans/<slug>.md # describe what to amend in your message, then invoke this skill
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Glob, Grep
@@ -21,11 +21,11 @@ The amendment description is in the conversation context immediately above this 
 Read the plan file in full. Build a complete picture:
 
 1. **Goal and acceptance criteria** — what is the plan trying to achieve?
-2. **Front matter and related research** — note the current `title`, `slug`, `description`, `status`, `task_count`, `created_at`, `started_at`, `completed_at`, any legacy `updated_at` or `## Plan summary` content that should be removed, and any entries under `## Related research`
-3. **All tasks** — for every task, note: ID, title, status (`[ ]`/`[~]`/`[x]`/`[!]`/`[>]`), dependencies, verify command, files to read, files to modify, and notes
+2. **Front matter and related references** — note the current `title`, `slug`, `description`, `status`, `task_count`, `created_at`, `started_at`, `completed_at`, any legacy `updated_at` or `## Plan summary` content that should be removed, and any entries under `## Related research` and `## Related specs`
+3. **All tasks** — for every task, note: ID, title, status (`[ ]`/`[~]`/`[h]`/`[x]`/`[!]`/`[>]`), dependencies, verify command, files to read, files to modify, notes, and any `Execution` metadata
 4. **Dependency graph** — mentally map which tasks feed into which. A change to T2 may cascade to T4, T5, T7 even if T4 doesn't directly reference T2
 5. **Decisions log** — understand the history and what has already been decided
-6. **Current state** — how far along is execution? What's been done, what's in flight?
+6. **Current state** — how far along is execution? What's been done, what's locally in flight, and what's delegated externally via `[h]`?
 7. **Optional wiki context** — if a wiki exists, read the schema and only the notes directly relevant to the plan area or amendment. Treat the wiki as a durable memory layer, not the authority over current repo state.
 
 Do not modify anything yet.
@@ -48,7 +48,7 @@ Apply these lenses:
 
 **Acceptance criteria** — does the amendment affect the plan's goal or acceptance criteria? If so, those need updating too.
 
-**Linked research** — does the amendment mean the plan should reference different or additional research? If so, update `## Related research` and any affected task `Files to read`.
+**Linked research and specs** — does the amendment mean the plan should reference different or additional research or spec files? If so, update `## Related research`, `## Related specs`, and any affected task `Files to read`.
 
 **Plan metadata** — does the amendment change the short description, task count, or overall status that the YAML front matter and `plans/INDEX.md` should reflect?
 
@@ -84,7 +84,7 @@ Format it exactly like this:
   (or: None — no completed tasks are invalidated)
 
 **Pending tasks with updated scope:**
-  Tx — <title>  [currently: [ ] / [~]]
+  Tx — <title>  [currently: [ ] / [~] / [h]]
     Change: <what in this task's notes, files, verify command, or dependencies will be updated>
 
   (or: None)
@@ -100,8 +100,8 @@ Format it exactly like this:
 **Goal / acceptance criteria changes:**
   <describe any updates needed, or "None">
 
-**Related research changes:**
-  <describe any links to add, remove, or replace in `## Related research`, or "None">
+**Related research / specs changes:**
+  <describe any links to add, remove, or replace in `## Related research` and `## Related specs`, or "None">
 
 **Plan metadata / index changes:**
   <describe any description, task count, status, or index-row updates needed, or "None">
@@ -139,13 +139,13 @@ If the user asks for changes to the proposal, revise it and ask again. Repeat un
 
 Once confirmed, apply changes to the plan file in this exact order:
 
-### A. Update goal / acceptance criteria / related research / plan metadata (if needed)
+### A. Update goal / acceptance criteria / related research / specs / plan metadata (if needed)
 
 Edit the Goal and Acceptance criteria sections if the amendment changes the observable end state. Keep the acceptance criteria checkable, and prefer independently re-runnable tests or validations where appropriate.
 
 If the observable scope changes materially, also update front matter `description`. The description must stay within 70 tokens.
 
-If the amendment changes which research memos the plan depends on, update `## Related research` so it lists only the relevant memo paths with short reasons. If additional research is clearly needed but missing, stop and recommend `/do-research <topic>` before applying speculative plan changes.
+If the amendment changes which research memos or spec files the plan depends on, update `## Related research` and `## Related specs` so they list only the relevant paths with short reasons. If additional research is clearly needed but missing, stop and recommend `/do-research <topic>` before applying speculative plan changes.
 
 ### B. Mark invalidated completed tasks as [>]
 
@@ -165,13 +165,18 @@ For each `[x]` task in the confirmed proposal:
 
 ### C. Edit pending tasks with updated scope
 
-For each `[ ]`/`[~]` task in the confirmed proposal:
+For each `[ ]`/`[~]`/`[h]` task in the confirmed proposal:
 
 - Update Notes to describe the scope change
 - Update Verify if needed
 - Update `Files to read` and `Files to modify` if the research surface or edit surface changed
 - Update Depends on if dependency order changed
 - If the amendment changes behavior, update the task so it includes automated tests or validations when reasonable
+
+If the task is currently `[h]`, treat it as active external work. Do not silently leave stale delegation in place. Either:
+
+- keep it `[h]` only if the amendment does not materially change what the external worker is doing, or
+- convert it to `[>]` / `[ ]` as appropriate if the in-flight delegated output is now stale and must be re-delegated later
 
 Do NOT change the task ID. If the change makes the task fundamentally different, supersede it: mark the old one `[!]` with a note, and add a new task.
 
@@ -183,11 +188,14 @@ Append new tasks after the last existing task, continuing the ID sequence (last 
 ### Tx — <title>
 - **Status:** [ ]
 - **Depends on:** <task IDs or "none">
+- **Execution:** <optional structured execution metadata, or omit for hub tasks>
 - **Verify:** `<workspace-native automated check>`
 - **Files to read:** <!-- research memos, docs, existing source files, contracts, tests, or external references to consult -->
 - **Files to modify:** <!-- source files, tests, docs, or generated artifacts this task will change -->
 - **Notes:** Added by amendment YYYY-MM-DD: <reason>
 ```
+
+If the new task should be delegated later, use the same structured `Execution` format the plan already uses.
 
 ### E. Update downstream dependencies
 
@@ -251,14 +259,14 @@ Amendment applied to plans/<slug>.md
     Wiki updates:   path/to/note.md          ← or "none"
 
 To resume execution: /do-start plans/<slug>.md
-Note: /do-start will detect the [>] tasks and prompt you on how to handle them.
+Note: /do-start will detect the [>] tasks and will also respect any remaining [h] delegated tasks.
 ```
 
 ---
 
 ## Rules (non-negotiable)
 
-- **Never delete tasks.** Completed tasks become `[>]`. Pending tasks get edited. The decisions log is append-only.
+- **Never delete tasks.** Completed tasks become `[>]`. Pending or delegated tasks get edited. The decisions log is append-only.
 - **Never apply changes before user confirmation in Phase 4.**
 - **Preserve all task IDs.** Never renumber existing tasks.
 - **Do not execute any implementation work.** Your job is plan surgery only.

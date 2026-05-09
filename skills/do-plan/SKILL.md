@@ -1,12 +1,20 @@
 ---
 name: do-plan
-description: Create a structured implementation plan for a feature or task in the current workspace. Use current repo context, any relevant persisted research, and optionally an existing wiki to build atomic, verifiable, dependency-ordered tasks before execution.
+description: Use when a workspace task, feature, or bugfix needs an execution-ready implementation plan with ordered, verifiable steps grounded in current repo context, relevant persisted research, spec files, and optional wiki notes before any code is written.
 argument-hint: <feature description>
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Write, Edit
+allowed-tools: Read, Glob, Grep, Write, Edit, Skill
 ---
 
 You are a senior engineer working in the current workspace. Your job is to decompose a feature description into a rigorous, executable implementation plan, not to write any code yet.
+
+## Non-negotiables
+
+- Stay in planning mode. Do not implement code, edit source files outside plan artifacts, or claim the task is already done.
+- Read current repo context before planning. Research memos, spec files, and wiki notes are accelerators, not authority over the current repo state.
+- Produce a plan that a smaller tool-capable model could execute reliably: every task must be atomic, dependency-ordered, externally verifiable, and explicit about what to read and what to modify.
+- Keep this skill authoritative for the output contract: always write `plans/<slug>.md` and keep `plans/INDEX.md` synchronized. Never switch to `docs/superpowers/plans/` or any other plan location.
+- If critical uncertainty remains after local research, stop and recommend `/do-research <topic>` instead of inventing facts.
 
 ## Input
 
@@ -14,9 +22,25 @@ The feature description is: $ARGUMENTS
 
 ---
 
+## Step 0 - Optional superpowers preflight
+
+Before any repo exploration, check whether the harness can invoke other skills.
+
+If the current conversation or harness context already indicates that `using-superpowers` is loaded, do not invoke it again. Treat it as already active and continue under that guidance.
+
+Otherwise, if skill invocation is supported, you may do one safe availability check or one direct invocation attempt for `using-superpowers`.
+
+- Treat that skill as process guidance only inside `/do-plan`.
+- If it routes toward other planning skills with a different artifact format, keep any useful reasoning or decomposition guidance, but normalize the final output back to this skill's contract.
+- `/do-plan` remains authoritative for `plans/<slug>.md`, the required markdown sections, YAML front matter, and `plans/INDEX.md` updates.
+
+If skill invocation is unavailable, unsupported, the lookup or invocation errors, or `using-superpowers` is not installed, treat that as unavailable and continue immediately with this native `/do-plan` workflow. Do not retry, do not block, and do not ask the user a follow-up question just for skill availability.
+
+---
+
 ## Step 1 — Load context
 
-Before decomposing anything, inspect the workspace to understand its structure, conventions, and constraints. Start by checking for relevant persisted research under `plans/research/`, then read the current workspace state. Use search and file reads to discover the right files instead of assuming fixed paths.
+Before decomposing anything, inspect the workspace to understand its structure, conventions, and constraints. Start by checking for relevant persisted research under `plans/research/` and spec files under `specs/`, then read the current workspace state. Use search and file reads to discover the right files instead of assuming fixed paths.
 
 ### Existing research
 
@@ -30,6 +54,19 @@ If `plans/research/` exists:
 6. Read the full memo only if it is directly relevant to the feature you are planning
 7. Treat research memos as accelerators, not source of truth. If a memo conflicts with the current repo state, trust the current repo state and note the mismatch in the plan's decisions log
 8. If you use a memo, add its path to `## Related research` in the plan and include it in relevant task `Files to read`
+
+### Spec files
+
+If `specs/` exists:
+
+1. List `specs/*.md`
+2. Derive 3-8 search terms from the feature description
+3. Read only the front matter or opening section of each spec for discovery. Do not read every spec file in full.
+4. Shortlist likely specs using filename similarity and front matter fields like `title`, `description`, and `keywords`
+5. Read only the opening section of the 1-3 best candidates first (front matter + top of file)
+6. Read the full spec only if it is directly relevant to the feature you are planning
+7. Treat spec files as accelerators, not source of truth. If a spec conflicts with the current repo state, trust the current repo state and note the mismatch in the plan's decisions log
+8. If you use a spec, add its path to `## Related specs` in the plan and include it in relevant task `Files to read`
 
 After that, read the most relevant current workspace material you can find, including:
 
@@ -65,7 +102,9 @@ Apply this strategy:
    - **Verifiable** — has a concrete workspace-native verify command (focused test, typecheck, lint, build, script, etc.)
    - **Externally checkable** — prefer tasks that add or update automated tests or validations another engineer or CI can run independently, rather than relying only on local manual checking
    - **Dependency-aware** — explicitly lists which task IDs must be `[x]` before it can start
-   - **File-annotated** — populate `Files to read` (relevant research memos, wiki notes, docs, contracts, existing source files, tests, or other references to consult) and `Files to modify` (files that will be created or changed) using the knowledge you gained in Step 1. Be specific and use full paths relative to the workspace root. This lets `/do-start` go straight to the right files without re-researching.
+   - **File-annotated** — populate `Files to read` (relevant research memos, spec files, wiki notes, docs, contracts, existing source files, tests, or other references to consult) and `Files to modify` (files that will be created or changed) using the knowledge you gained in Step 1. Be specific and use full paths relative to the workspace root. This lets `/do-start` go straight to the right files without re-researching.
+   - **Thorough enough for smaller models** — write enough detail that another model does not need to guess what success looks like, which files matter, or what command proves the task
+   - **Topology-aware** (optional) — if a task clearly benefits from multi-agent execution, add an `Execution` field using the structured format described in Step 3.5. This is optional metadata, not a mandatory field, but if you include it, make it parseable enough for `/do-start` to launch safely.
 4. Assign IDs sequentially: T1, T2, T3 ...
 5. Research tasks that remove critical uncertainty come first. Foundational tasks (data model, shared types/utilities, config) come next. Features built on them come after. Docs, changelog, and release-note work come last.
 
@@ -90,7 +129,7 @@ If the workspace documents a mandatory workflow, treat every required step as no
 ## Step 3 — Write the plan file
 
 1. Slugify the feature description: lowercase, words separated by hyphens, no special characters, max 6 words. Example: "add BetterAuth session handling to api" → `betterauth-session-handling-api`
-2. Read the template at `${CLAUDE_SKILL_DIR}/references/template.md`
+2. Read the template at `${CLAUDE_SKILL_DIR}/references/template.md`. If that variable is unavailable in the current harness, read the same skill-local reference file via the harness-equivalent path to `references/template.md` instead.
 3. Ensure the `plans/` directory exists, then write the plan to `plans/<slug>.md`, filling in every section.
 
    The plan file must begin with YAML front matter. Populate and keep these fields accurate from the start:
@@ -109,7 +148,8 @@ If the workspace documents a mandatory workflow, treat every required step as no
    Fill in the rest of the plan as follows:
 
    - `# <title>` — same value as `title`
-   - **Related research** — bullet list of the research memo paths you actually used while planning, with a short reason for each. If none were used, write `_None linked._`
+    - **Related research** — bullet list of the research memo paths you actually used while planning, with a short reason for each. If none were used, write `_None linked._`
+    - **Related specs** — bullet list of the spec file paths you actually used while planning, with a short reason for each. If none were used, write `_None linked._`
    - **Goal** — one sentence describing the observable end state
    - **Acceptance criteria** — bullet list of checkable conditions. Always include the primary observable outcome and the relevant workspace-native validation commands. Prefer automated tests or validations that can be re-run independently by another engineer or CI.
    - **Tasks** — one `### Tx — <title>` block per task with Status, Depends on, Verify, Files to read, Files to modify, and Notes
@@ -140,6 +180,58 @@ Use today's actual local date and time for `created_at`, and use today's date fo
     - Keep the rows ordered as `in-progress`, then `pending`, then `done`, then `abandoned`
 
 `/do-plan` must create the YAML front matter, the required markdown sections, and `plans/INDEX.md`. `/do-start` and `/do-amend` rely on the YAML metadata and section headers being present and accurate.
+
+---
+
+## Step 3.5 — Evaluate execution topology
+
+After writing the plan, evaluate whether any tasks or contiguous task groups would benefit from multi-agent execution via hcom. This is a generous evaluation — always check every task.
+
+### Trigger conditions
+
+For each task, check whether any of these conditions apply:
+
+| Trigger | Recommended topology |
+|---|---|
+| Risky or destructive implementation (data migrations, schema changes, force pushes) | `planner-executor-reviewer` |
+| Needs independent code review before merge (auth changes, security-sensitive code, shared APIs) | `worker-reviewer` |
+| Parallel branches that can run independently (independent features, separate modules) | `hub-spoke` |
+| Large scope — roughly 5+ tasks in a cohesive group | `hub-spoke` or `sequential-cascade` depending on dependency structure |
+| Cross-cutting concerns touching multiple domains (frontend + backend + infra) | `hub-spoke` |
+| High-judgment or ambiguous decisions (design choices, architecture selection) | `ensemble-with-judge` |
+| Staged refinement where later work depends on earlier output (planning → execution → review) | `sequential-cascade` |
+
+### Default
+
+If no trigger matches a task, it runs as a **single agent**. No annotation is needed.
+
+### Annotating tasks
+
+For tasks where a trigger matches, add an `Execution` field to the task block.
+
+Prefer this structured form when you know the concrete agent details:
+
+```
+- **Execution:** topology: <topology> | agent: <agent-tag> | worktree: <path> | branch: <branch-name> | model: <provider/model> | rules: <behavioral rules>
+```
+
+If the plan only knows the topology and rationale, you may use an advisory-only form instead. `/do-start` will treat that as inline execution unless later plan edits add concrete launch fields:
+
+```
+- **Execution:** topology: worker-reviewer | rules: independent review required because T3 through T5 all modify authentication
+```
+
+For following tasks that reuse the same agent, prefer a short continuation form:
+
+```
+- **Execution:** same agent as T3
+```
+
+### Scope
+
+This step produces execution metadata, not runnable automation. Do not generate shell scripts, agent TOML files, or launch commands here. The `Execution` field should tell `/do-start` enough to choose between inline hub execution and hcom delegation. If the plan lacks concrete launch fields, that is acceptable, but it means `/do-start` will fall back to inline execution for that session.
+
+If no tasks match any trigger, skip this step entirely — no `Execution` fields are added and no topology section appears in the report-back.
 
 ---
 
@@ -185,6 +277,9 @@ Plan written to plans/<slug>.md
 Related research:
   - <path or "none">
 
+Related specs:
+  - <path or "none">
+
 Filed back into wiki:
   - <path or "none">
 
@@ -194,6 +289,10 @@ Tasks:
   T1 — <title> [verify: <command>]
   T2 — <title> [depends: T1] [verify: <command>]
   ...
+
+Execution hints:
+  - T3-T5: worker-reviewer (authentication changes need independent review)
+  - All other tasks: single agent
 
 To begin execution: /do-start plans/<slug>.md
 ```
