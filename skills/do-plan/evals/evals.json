@@ -1,0 +1,132 @@
+{
+  "skill_name": "do-plan",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Plan a feature in a workspace where the superpowers bundle is installed, including `using-superpowers`. Keep the final plan compatible with this repo's workflow.",
+      "expected_output": "A planning response that uses `using-superpowers` when appropriate, but still writes the final plan to `plans/<slug>.md` and updates `plans/INDEX.md` instead of switching to a superpowers-native plan location.",
+      "assertions": [
+        "The output preserves `plans/<slug>.md` as the plan artifact contract",
+        "The output preserves `plans/INDEX.md` synchronization as part of the contract",
+        "The output does not switch the artifact location to `docs/superpowers/plans/`",
+        "The output treats `using-superpowers` as optional process guidance rather than as a replacement artifact system"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Create a plan for a feature, but assume `using-superpowers` is not installed in the harness and the skill lookup or invocation attempt errors once.",
+      "expected_output": "A response that proceeds with the native `/do-plan` workflow without blocking or asking a follow-up question solely about skill availability, even if the skill probe fails.",
+      "assertions": [
+        "The output does not block on missing `using-superpowers`",
+        "The output treats a skill lookup or invocation error as unavailable and continues",
+        "The output does not retry the same failing skill probe repeatedly",
+        "The output does not ask a follow-up question solely to confirm skill availability",
+        "The output continues with repo research and plan generation using the native `/do-plan` workflow"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I need a plan for adding audit logging for failed sign-ins. Please do it quickly.",
+      "expected_output": "A planning-only response that resists pressure to implement and still produces a thorough, dependency-ordered plan.",
+      "assertions": [
+        "The output stays in planning scope and does not claim code was implemented",
+        "The output still requires explicit task fields rather than a shallow checklist",
+        "The output includes focused verification guidance instead of vague manual checking"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "There are already research memos under `plans/research/` about webhook validation. Create a plan for extending webhook retries.",
+      "expected_output": "A response that shortlists and reuses relevant research memos instead of ignoring persisted research or reading every memo in full.",
+      "assertions": [
+        "The output reuses relevant `plans/research/*.md` memos when they exist",
+        "The output does not require reading every research memo in full",
+        "The output carries used memo paths into `## Related research` and relevant task `Files to read` entries"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "The wiki says the API uses Basic auth, but the current repo code and tests show Bearer tokens. Create a plan for a new auth-related feature.",
+      "expected_output": "A response that trusts the current repo state over stale wiki or memo context and notes the mismatch when it materially affects planning.",
+      "assertions": [
+        "The output prioritizes current repo state over conflicting wiki context",
+        "The output treats wiki and research as accelerators rather than source of truth",
+        "The output notes the mismatch in the plan's decisions log when it materially affects planning"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Create a plan for a feature that changes persisted data, adds a migration, regenerates client types, and updates an API contract.",
+      "expected_output": "A response that breaks every required schema, migration, generation, contract, documentation, and validation step into explicit tasks instead of collapsing them into one vague item.",
+      "assertions": [
+        "The output includes explicit tasks for schema or model updates when required",
+        "The output includes explicit tasks for migrations when required",
+        "The output includes explicit tasks for generated artifacts or client regeneration when required",
+        "The output includes explicit tasks for tests, validations, and any required contract or documentation updates"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Write the kind of plan that a smaller model with strong tool use could execute without guessing.",
+      "expected_output": "A response with explicit, atomic tasks that each specify dependencies, concrete files to read and modify, focused verification commands, and notes that explain what the task delivers.",
+      "assertions": [
+        "Each task includes Status, Depends on, Verify, Files to read, Files to modify, and Notes",
+        "The output uses concrete workspace-relative file paths rather than vague placeholders",
+        "The output uses focused workspace-native automated verify commands rather than generic 'run tests' wording",
+        "The output is detailed enough that another model does not need to guess the intended deliverable"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Plan a feature where the local repo context is too thin to safely infer the integration behavior and no relevant docs are present.",
+      "expected_output": "A response that stops before inventing facts and recommends `/do-research <topic>` when critical uncertainty remains.",
+      "assertions": [
+        "The output does not invent missing implementation facts",
+        "The output recommends `/do-research <topic>` when critical uncertainty remains after local inspection",
+        "The output explains that planning without enough repo evidence would be unsafe"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Create a brand new plan and make sure it is ready for `/do-start` without any manual cleanup.",
+      "expected_output": "A response that preserves the exact repo-native plan contract: YAML front matter with the required fields, the required markdown sections, and a synchronized `plans/INDEX.md` row.",
+      "assertions": [
+        "The output includes YAML front matter with `title`, `slug`, `description`, `status`, `task_count`, `created_at`, `started_at`, and `completed_at`",
+        "The output sets new-plan metadata to `status: pending`, `started_at: null`, and `completed_at: null`",
+        "The output includes the required markdown sections such as `## Related research`, `## Goal`, `## Acceptance criteria`, `## Tasks`, `## Decisions log`, and `## Handoff notes`",
+        "The output synchronizes `plans/INDEX.md` with the plan row using the slim `Status | Title | Plan | Description | Tasks` schema"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "A repo already has an older `plans/INDEX.md` with timestamp-heavy columns. Create a new plan without leaving the index in the legacy format.",
+      "expected_output": "A response that rewrites the legacy plans index to the slim schema before inserting or updating the new plan row.",
+      "assertions": [
+        "The output detects and rewrites legacy timestamp-heavy `plans/INDEX.md` layouts before updating rows",
+        "The output keeps plan rows ordered as `in-progress`, then `pending`, then `done`, then `abandoned`",
+        "The output mirrors the plan front matter fields into the updated index row",
+        "The output preserves the repo-native `plans/INDEX.md` migration behavior instead of inventing a new index format"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "The current conversation already says `using-superpowers` is loaded. Create a plan for a feature without duplicating skill setup.",
+      "expected_output": "A response that recognizes `using-superpowers` as already active, avoids reinvoking it, and continues with the repo-native `do-plan` workflow under that guidance.",
+      "assertions": [
+        "The output does not instruct the model to reload `using-superpowers` when it is already active",
+        "The output treats the already-loaded skill as sufficient process guidance",
+        "The output still preserves the repo-native `plans/<slug>.md` and `plans/INDEX.md` contract"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "Create a plan in a non-Claude harness where `${CLAUDE_SKILL_DIR}` is unavailable but skill-local reference files are still accessible.",
+      "expected_output": "A response that still reads the plan template through a harness-equivalent skill-local `references/template.md` path and preserves the normal repo-native plan output contract.",
+      "assertions": [
+        "The output does not fail planning solely because `${CLAUDE_SKILL_DIR}` is unavailable",
+        "The output falls back to the harness-equivalent skill-local `references/template.md` path",
+        "The output preserves the same final `plans/<slug>.md` and `plans/INDEX.md` behavior"
+      ]
+    }
+  ]
+}

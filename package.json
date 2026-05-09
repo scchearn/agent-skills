@@ -1,0 +1,20 @@
+{
+  "name": "agent-skills",
+  "version": "1.0.0",
+  "description": "Reusable workflow skills for agent coding harnesses compatible with Anthropic's skill layout.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/scchearn/agent-skills.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/scchearn/agent-skills/issues"
+  },
+  "homepage": "https://github.com/scchearn/agent-skills#readme"
+}

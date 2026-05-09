@@ -140,7 +140,7 @@ The wiki workflow assumes these defaults unless the workspace already has a stro
 | --- | --- | --- |
 | [agent-md-improver](./skills/agent-md-management/skills/agent-md-improver/) | You want to audit or improve `AGENTS.md`, `CLAUDE.md`, or local guidance files so future agent sessions have better working context | A quality report plus targeted guidance-file updates after approval, with `AGENTS.md` preferred for shared neutral guidance and `CLAUDE.md` supported when present |
 | [do-research](./skills/do-research/) | You need evidence before deciding what to build or change | A research note in `plans/research/` with findings, constraints, and the next recommended step, plus optional durable wiki updates when warranted |
-| [do-plan](./skills/do-plan/) | You have a feature, bug fix, or task that should be broken into ordered steps | A plan file in `plans/` with concrete tasks, verification steps, links to any research it used, and optional durable wiki updates when warranted |
+| [do-plan](./skills/do-plan/) | You have a feature, bug fix, or task that should be broken into ordered steps, and you want a thorough execution-ready plan grounded in repo context, optional research, and optional wiki notes | A plan file in `plans/` with concrete tasks, verification steps, links to any research it used, and optional durable wiki updates when warranted. When `using-superpowers` is installed, `/do-plan` may consult it first but still writes the repo-native `plans/` artifacts |
 | [do-agents](./skills/do-agents/) | You want an hcom agent-team design, or want to load or reuse an existing saved config before execution | Either new-team `agents/<slug>.toml` and `agents/<slug>.md` artifacts, or loader instructions for a saved config, with roles, routing, intent, and launch guidance |
 | [do-start](./skills/do-start/) | You want the agent to execute the next unblocked task from a plan | Autonomous task execution with verification, plan updates, and optional durable wiki write-back |
 | [do-amend](./skills/do-amend/) | A plan already exists, but requirements or scope changed | An impact analysis, then a safe update to the plan after approval, with optional durable wiki updates when warranted |
@@ -184,6 +184,8 @@ In `--guidance-only` mode, the wiki is read-only context only. The skill should 
 You do not need to use every skill every time. If the work is already well understood, it is fine to start with `/do-plan`.
 
 If `plans/research/` or a wiki already exists, `/do-research`, `/do-plan`, `/do-start`, and `/do-amend` can reuse that state. They should only write back into the wiki when the finding is durable enough to help future sessions.
+
+Some skills also carry scenario fixtures under `skills/<skill>/evals/evals.json` so the response contract can be reviewed and strengthened over time.
 
 ## Common Examples
 

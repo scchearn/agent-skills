@@ -21,7 +21,7 @@
     {
       "name": "do-plan",
       "path": "skills/do-plan/SKILL.md",
-      "description": "Create a dependency-ordered implementation plan using current repo context, relevant research, and optional wiki context",
+      "description": "Create a thorough execution-ready implementation plan using current repo context, relevant research, and optional wiki context, while preserving the repo-native plans/ artifact contract",
       "template": "skills/do-plan/references/template.md"
     },
     {
