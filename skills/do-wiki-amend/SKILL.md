@@ -4,6 +4,9 @@ description: Correct or update existing wiki content when newer evidence shows t
 argument-hint: <what changed or what needs correcting>
 disable-model-invocation: true
 allowed-tools: Read Glob Grep Write Edit Bash
+metadata:
+  version: "1.0.0"
+  author: scchearn
 ---
 
 You are a senior engineer and disciplined wiki maintainer correcting or updating existing wiki content that is no longer accurate. Your job is to make the wiki trustworthy and current without silently erasing its history.

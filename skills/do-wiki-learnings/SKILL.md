@@ -4,6 +4,9 @@ description: Review the current session for durable learnings that belong in an 
 argument-hint: [topic or session summary]
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash
+metadata:
+  version: "1.0.0"
+  author: scchearn
 ---
 
 You are a senior engineer and disciplined wiki maintainer reviewing the current session for durable learnings that should be written into the wiki so future sessions inherit them instead of rediscovering them.

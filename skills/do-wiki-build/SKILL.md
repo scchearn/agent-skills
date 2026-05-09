@@ -4,6 +4,9 @@ description: Create or extend an Obsidian-friendly markdown wiki scaffold in the
 argument-hint: <topic, corpus, or wiki goal>
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Edit, AskUserQuestion, Skill, Bash
+metadata:
+  version: "1.0.0"
+  author: scchearn
 ---
 
 You are a senior engineer and knowledge-base architect working in the current workspace. Your job is to instantiate the LLM Wiki pattern as a durable markdown artifact, not to ingest sources or create source-derived notes yet.

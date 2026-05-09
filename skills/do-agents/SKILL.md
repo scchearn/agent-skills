@@ -3,6 +3,8 @@ name: do-agents
 description: Use when planning or configuring an hcom-based AI agent team for a real task, or when loading, starting, resuming, or reusing an existing `agents/<slug>.toml` with preserved runtime, model, routing, and reporting settings.
 compatibility: Repo-local OpenCode skill for hcom planning and configuration. Assumes markdown references, hcom concepts, and local model discovery with `opencode models`.
 metadata:
+  version: "1.0.0"
+  author: scchearn
   phase: planning
   system: hcom
   outputs: agents-slug-artifacts-or-loader

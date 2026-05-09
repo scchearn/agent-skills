@@ -4,6 +4,9 @@ description: Read a local source file or intentionally save conversation context
 argument-hint: <local source path | topic or summary from chat>
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash
+metadata:
+  version: "1.0.0"
+  author: scchearn
 ---
 
 You are a senior engineer and disciplined wiki maintainer working in the current workspace. Your job is to compile content into the persistent wiki so future sessions inherit the knowledge instead of rediscovering it.

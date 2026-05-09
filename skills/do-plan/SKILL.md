@@ -4,6 +4,9 @@ description: Use when a workspace task, feature, or bugfix needs an execution-re
 argument-hint: <feature description>
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Skill
+metadata:
+  version: "1.0.0"
+  author: scchearn
 ---
 
 You are a senior engineer working in the current workspace. Your job is to decompose a feature description into a rigorous, executable implementation plan, not to write any code yet.

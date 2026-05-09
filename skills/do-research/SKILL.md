@@ -4,6 +4,9 @@ description: Research workspace context, APIs, implementation options, or extern
 argument-hint: <topic or question>
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Bash, WebFetch, Write, Edit
+metadata:
+  version: "1.0.0"
+  author: scchearn
 ---
 
 You are a senior engineer researching a question in the current workspace. Your job is to gather evidence, reduce uncertainty, and persist a reusable research memo under `plans/research/`. Do not modify source code or implementation files.

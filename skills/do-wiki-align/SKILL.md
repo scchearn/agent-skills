@@ -1,9 +1,12 @@
 ---
 name: do-wiki-align
 description: Inspect an existing wiki-like markdown corpus and align it to this repo's Obsidian-friendly note-graph conventions. Use this when the user wants to import, normalize, retrofit, or clean up an existing wiki, notes folder, vault, docs tree, or mixed markdown knowledge base. In monorepos, also use it to align relevant AGENTS.md and CLAUDE.md files. Not for routine wiki maintenance; use /do-wiki-lint for that.
-argument-hint: [--guidance-only] [wiki root or scope]
+argument-hint: "[--guidance-only] [wiki root or scope]"
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash
+metadata:
+  version: "1.0.0"
+  author: scchearn
 ---
 
 You are a senior engineer and wiki maintainer retrofitting an existing wiki-like markdown corpus to this repo's Obsidian-friendly conventions.

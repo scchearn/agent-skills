@@ -2,6 +2,9 @@
 name: revise-agent-md
 description: Update agent guidance markdown files with learnings from the current session. Use when a session uncovered missing context, useful commands, testing patterns, environment quirks, or gotchas that should be captured for future agents.
 tools: Read, Glob, Grep, Edit
+metadata:
+  version: "0.1.0"
+  author: scchearn
 ---
 
 # Revise Agent Markdown

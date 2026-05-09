@@ -1,30 +1,33 @@
 ---
 name: do-start
-description: Use when beginning or resuming execution of a plan file, including mixed hub-and-hcom plans where local tasks run in-session and delegated tasks run through structured `Execution` metadata while the hub keeps verification and plan metadata accurate.
+description: Use when beginning or resuming a plan file, including mixed local and hcom-delegated execution, while keeping verification, plan state, and handoff metadata accurate.
 argument-hint: plans/<slug>.md [T3 | T3,T5,T7 | T3-T7]
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
+metadata:
+  version: "1.0.0"
+  author: scchearn
 ---
 
-You are a senior engineer executing a pre-approved implementation plan in the current workspace. Work autonomously. Make decisions, log them, and keep moving. Only stop when a task is genuinely blocked with no resolvable path forward.
+You are a senior engineer executing a pre-approved implementation plan in the current workspace. Work autonomously, log decisions, and stop only for real blockers.
 
-If the plan contains structured `Execution` metadata, act as the visible hub for the workflow. The current session stays interactive. Spawned hcom workers should usually be headless. Verification always stays with the hub.
+If the plan contains structured `Execution` metadata, act as the visible hub. Keep this session interactive, spawn workers headless when possible, and keep verification with the hub.
 
 ## High-level flow
 
 ```mermaid
 graph TD
-    A[Orient: pick next task] --> J{Task has Execution field?}
+    A[Orient] --> J{Execution?}
 
-    J -->|No: hub task| D[Mark local task in-progress]
-    J -->|Yes: delegated task| B[Load agent reference and Execution metadata]
+    J -->|No| D[Mark local task in-progress]
+    J -->|Yes| B[Load delegation metadata]
 
-    B --> WT{Worktree needed?}
-    WT -->|Yes| WTADD[Create or reuse worktree safely]
+    B --> WT{Worktree?}
+    WT -->|Yes| WTADD[Prepare worktree]
     WT -->|No| SPAWN
     WTADD --> SPAWN
 
-    SPAWN[Spawn hcom worker and send task context] --> MARKH[Mark delegated tasks as h]
+    SPAWN[Spawn worker and send context] --> MARKH[Mark delegated tasks as h]
     MARKH --> WAIT[Wait for DONE or APPROVED signal]
 
     WAIT --> VERIFY2[Hub runs verify command]
@@ -51,57 +54,49 @@ graph TD
 
 ## Step 0 — Parse arguments and load the plan
 
-`$ARGUMENTS` may contain a plan path and an optional task filter, separated by a space:
+`$ARGUMENTS` is `<plan-path> [task-filter]`.
 
 - `plans/foo.md` — no filter, run all tasks in normal order
 - `plans/foo.md T3` — run T3 only
 - `plans/foo.md T3,T5,T7` — run exactly those tasks (comma-separated, no spaces)
 - `plans/foo.md T3-T7` — run T3 through T7 inclusive (by numeric sequence)
 
-Parse `$ARGUMENTS`:
+Parse everything before the first space as the **plan path**, and everything after it as the optional **task filter**. Read only the plan path; never try to read the filter as a file.
 
-1. Everything up to the first space is the **plan path**
-2. Everything after the first space (if present) is the **task filter**
+If a filter is present, build the **target set** from those task IDs only. Otherwise the target set is the whole plan.
 
-After parsing, read only the **plan path**. Never attempt to read the task filter as a file.
-
-If a task filter is present, build the **target set** — the explicit list of task IDs to work on this session. Tasks outside the target set will not be executed, even if they are unblocked.
-
-If no task filter is present, the target set is **all tasks** (normal behaviour).
-
-Read the plan file in full, including the YAML front matter and all markdown sections. Treat the YAML front matter as the only authoritative plan metadata. If the file still contains a legacy `updated_at` field or `## Plan summary` section, remove them the next time you edit the plan.
+Read the plan in full. YAML front matter is the only authoritative plan metadata. Remove any legacy `updated_at` field or `## Plan summary` section the next time you edit the plan.
 
 If the plan contains any `- **Execution:**` lines, read `references/hcom-orchestration.md` before delegating anything.
 
 ## Step 0.5 — Optional wiki context
 
-If the workspace contains a wiki root with files such as `SCHEMA.md`, `index.md`, `log.md`, or a legacy root `overview.md`:
+If the workspace contains a wiki root with files such as `SCHEMA.md`, `index.md`, `log.md`, or a legacy `overview.md`:
 
-1. Read the schema and the main hub notes first
-2. Read any relevant wiki notes already named in the task's `Files to read`
-3. If the plan does not already name wiki notes, search for notes directly relevant to the next target task
-4. Treat the wiki as an accelerator for durable workspace knowledge, not as the authority over current repo state
-5. If current repo state, tests, or primary docs conflict with the wiki, trust the current repo state and update the wiki later only if the correction is durable
+1. Read the schema and main hub notes first.
+2. Read any wiki notes already named in `Files to read`; otherwise search only for notes relevant to the next target task.
+3. Treat the wiki as durable-memory acceleration, not authority over current repo state.
+4. If repo state, tests, or primary docs conflict with the wiki, trust the repo and update the wiki later only if the correction is durable.
 
-**Dependency rule for targeted runs:** if a targeted task has a dependency that is `[ ]`, `[~]`, `[h]`, or `[>]` (i.e. not yet `[x]`), that is a problem. See the pre-flight below — surface it to the user rather than skipping silently.
+**Dependency rule for targeted runs:** if a targeted task depends on `[ ]`, `[~]`, `[h]`, or `[>]`, surface that to the user instead of skipping it silently.
 
 ## Step 0.75 — hcom capability and fallback
 
-Only do this if the plan contains concrete `Execution` metadata for one or more tasks.
+Only do this if the plan contains concrete `Execution` metadata.
 
 1. Check whether `hcom` is available.
-2. If `hcom` is unavailable, or the `Execution` field is advisory-only and lacks the concrete fields needed to launch safely, fall back to inline hub execution for those tasks during this session. Log the fallback in the Decisions log before continuing.
-3. If `hcom` is available, keep the current session as the hub. Do **not** launch another visible coordinator.
-4. If delegated tasks specify worktrees or branches, be ready to inspect existing worktrees before launching. If a required worktree exists on the wrong branch or has conflicting unexpected changes, stop and ask the user.
+2. Keep the current session as the hub. Do **not** launch another visible coordinator.
+3. Follow the reference file's fallback and worktree-safety rules before launching anything.
+4. If `hcom` is unavailable, or the metadata is advisory-only or incomplete, fall back to inline hub execution for that session and log why.
 
 ---
 
 ## Pre-flight: amendment check
 
-Before determining what to work on, scan the plan for any `[>]` (needs re-run) tasks **within or upstream of the target set**.
+Before determining what to work on, scan for `[>]` tasks **within or upstream of the target set**.
 
-- If running all tasks: check all `[>]` tasks in the plan.
-- If running a target set: check only `[>]` tasks that are in the target set, or are transitive dependencies of tasks in the target set.
+- Full run: check all `[>]` tasks in the plan.
+- Targeted run: check only `[>]` tasks inside the target set or in its transitive dependencies.
 
 ### If there are NO relevant `[>]` tasks
 
@@ -109,18 +104,13 @@ Proceed directly to Orientation below.
 
 ### If there ARE relevant `[>]` tasks
 
-You must reason about whether they block progress before touching any code.
+Before touching code:
 
-**Step A — Map the dependency graph**
-
-For each relevant `[>]` task, identify all downstream tasks within the target set — every `[ ]`, `[~]`, `[h]`, or `[>]` task that depends on it, directly or transitively.
-
-**Step B — Classify each `[>]` task**
+1. Map downstream tasks in the target set for each relevant `[>]` task — every `[ ]`, `[~]`, `[h]`, or `[>]` task that depends on it directly or transitively.
+2. Classify each `[>]` task:
 
 - **Blocking**: the `[>]` task is in the dependency chain of the next runnable task in the target set. Cannot proceed without resolving this first.
 - **Non-blocking**: the `[>]` task is not in the dependency chain of the next runnable task (parallel branch, or later). Execution could proceed without it, but it may cause problems later.
-
-**Step C — Surface and ask**
 
 STOP. Do not execute any tasks yet. Present to the user:
 
@@ -184,18 +174,18 @@ Wait for the user's choice before proceeding.
 
 ## Orientation
 
-Parse the plan file and determine the next **action** to take from the active queue (target set, filtered and ordered by the pre-flight steps above):
+Determine the next **action** from the active queue (target set, filtered and ordered by the pre-flight steps above):
 
-1. **Interrupted local task** — any task in the queue with status `[~]`? If yes (and not blocked by a `[>]` dependency), that is your first task. Note in the Decisions log that it was interrupted and you are resuming it.
+1. **Interrupted local task** — any `[~]` task in the queue? If yes (and not blocked by `[>]`), resume it and note that in the Decisions log.
 2. **Runnable pending or re-run task** — otherwise, find the highest-priority `[ ]` or `[>]` task in the queue whose every dependency is `[x]`.
    - If it has no concrete `Execution` metadata, this is a **hub task**.
    - If it has concrete `Execution` metadata, this is a **delegation candidate**.
 3. **Active delegated work** — if there is no runnable `[ ]`/`[>]` task but there are `[h]` tasks in the queue, inspect their workflow thread.
-   - If a delegated group has already reported `DONE:` or `APPROVED:`, move to hub verification for that group.
-   - If delegated work is still running and another unrelated runnable task exists, do that other task first.
-   - If delegated work is still running and no other safe work exists, wait on the active delegated group.
-4. **Blocked** — if the only remaining tasks in the queue have unresolved `[!]`, `[>]`, or `[h]` blocking dependencies, write a handoff note explaining why and stop.
-5. **Queue exhausted** — if all tasks in the target set are `[x]`, write a handoff note. If the target set was the full plan, this is a completion note. If it was a partial run, note which tasks were completed and what remains.
+    - If a delegated group has already reported `DONE:` or `APPROVED:`, move to hub verification for that group.
+    - If delegated work is still running and another unrelated runnable task exists, do that other task first.
+    - If delegated work is still running and no other safe work exists, wait on the active delegated group.
+4. **Blocked** — if the only remaining tasks have unresolved `[!]`, `[>]`, or `[h]` blocking dependencies, write a handoff note and stop.
+5. **Queue exhausted** — if all tasks in the target set are `[x]`, write a completion or partial-run handoff note.
 
 ### Delegation group resolution
 
@@ -203,9 +193,9 @@ When Orientation selects a task with concrete `Execution` metadata, build a **de
 
 1. Resolve the selected task's `Execution` metadata.
 2. Include following tasks from the active queue while they resolve to the same agent reference.
-3. Allow `same agent as Tn` shorthand — inherit the referenced task's `agent`, `worktree`, `branch`, `model`, and `rules`.
-4. Preserve task order inside the group. The worker may complete them in sequence, but the hub still verifies the group's outputs before anything is marked `[x]`.
-5. If the selected task's `Execution` metadata is advisory-only and does not contain enough information to launch safely, treat it as a hub task for this session and log the fallback.
+3. `same agent as Tn` inherits that task's concrete launch fields and `rules`.
+4. Preserve task order. The worker may execute sequentially, but the hub still verifies before anything is marked `[x]`.
+5. If the metadata is advisory-only or incomplete, treat the task as a hub task for this session and log the fallback.
 
 ---
 
@@ -228,7 +218,7 @@ For a **delegation group**:
 - `[>]` → `[h]` for every task in the group, and remove the `Re-run reason:` line once you re-delegate it
 - Leave tasks as `[h]` while the worker is running or while the hub is in the FIX/verify loop
 
-If this is the **first task or delegation being started** in this session (i.e. the front matter `status` is still `pending`), update the metadata before doing any code work:
+If this is the **first task or delegation** of the session and front matter `status` is still `pending`, update metadata before doing any code work:
 
 - Set front matter `status` to `in-progress`
 - Set front matter `started_at` to the current local date and time, format `YYYY-MM-DD HH:MM`, if it is currently `null`
@@ -241,20 +231,15 @@ On any plan edit, clean up legacy metadata if present:
 - Remove the entire `## Plan summary` section
 - If `plans/INDEX.md` still uses the older timestamp-heavy schema, rewrite it to the slim `Status | Title | Plan | Description | Tasks` schema before updating rows
 
-Even when the plan was already `in-progress`, keep the row in `plans/INDEX.md` synchronized whenever mirrored metadata changes. If you add tasks while splitting or correcting the plan, update `task_count` in the front matter and the `Tasks` column in the index.
+Even when the plan is already `in-progress`, keep `plans/INDEX.md` synchronized whenever mirrored metadata changes. If you add tasks while splitting or correcting the plan, update `task_count` and the index `Tasks` column.
 
 ### 2. Do the work
 
 #### 2a. Hub tasks
 
-**Before writing any code**, check the task for `Files to read` and `Files to modify` hints populated by `/do-plan`. If present:
+Before writing code, use `Files to read` and `Files to modify` when present. Read every file in `Files to read` first, use `Files to modify` as the starting edit set, and infer missing files only from the task, dependencies, workspace guidance, and adjacent patterns.
 
-- Read every file listed under `Files to read` first — these were identified during planning and contain the context you need.
-- Use `Files to modify` as your starting list of files to edit. Add others only if the implementation reveals they are needed.
-
-If these fields are absent or empty, fall back to reading any files you can infer from the task title, dependencies, workspace guidance, and adjacent code patterns.
-
-Implement the task. Read the relevant source files before editing them. Follow all applicable workspace guidance you discovered from files like `AGENTS.md`, `CLAUDE.md`, `README.md`, `CONTRIBUTING.md`, lockfiles, manifests, scripts, and adjacent code.
+Implement the task after reading the relevant source files. Follow applicable workspace guidance from files such as `AGENTS.md`, `CLAUDE.md`, `README.md`, `CONTRIBUTING.md`, manifests, lockfiles, scripts, and adjacent code.
 
 - Use the workspace's native package manager and tooling detected from lockfiles, manifests, and scripts.
 - Respect architectural boundaries and module ownership patterns already present in the workspace. Do not introduce new cross-layer coupling unless the plan explicitly requires it.
@@ -270,38 +255,19 @@ Before launching anything, read `references/hcom-orchestration.md`.
 For the selected delegation group:
 
 1. Read every file named under `Files to read` across the group and distill the context the worker needs.
-2. Prepare the worktree if one is specified.
-   - If the worktree does not exist, create it on the expected branch.
-   - If it exists on the expected branch and is safe to reuse, reuse it.
-   - If it exists on the wrong branch or has conflicting unexpected local changes, stop and ask the user.
-3. Keep the current session as the hub. Spawn only the worker(s) needed for the selected group, usually headless.
-4. Create one workflow thread per delegated group and reuse it across sends, waits, fixes, and cleanup.
-5. Send the assignment with:
-   - task IDs and titles
-   - the internal dependency order for the group
-   - `Files to read` and `Files to modify`
-   - every verify command the hub will run later
-   - the `rules:` text from `Execution` metadata
-   - the required completion signal vocabulary: `DONE:`, `APPROVED:`, `FIX:`, `BLOCKED:`
-6. Require the worker to report on-thread:
-   - `DONE: <task ids>` when the group is ready for hub verification
-   - `APPROVED: <task ids>` when the group contains an internal reviewer and review passed
-   - `BLOCKED: <reason>` if the worker cannot continue safely
-7. If `hcom` is unavailable or the group lacks the concrete metadata required to launch safely (`agent`, `model`, and any required `worktree` or `branch` info), execute those tasks inline as hub tasks for this session instead. Log the fallback in the Decisions log.
+2. Follow the reference file for worktree prep, thread bootstrap, spawn, assignment, wait, FIX loops, and cleanup.
+3. The assignment must include task IDs and titles, internal task order, `Files to read`, `Files to modify`, every verify command the hub will run, the `rules:` text from `Execution`, and the required `DONE:` / `APPROVED:` / `FIX:` / `BLOCKED:` vocabulary.
+4. If `hcom` is unavailable or the group lacks the concrete metadata needed to launch safely (`agent`, `model`, and any required `worktree` or `branch` info), execute the tasks inline as hub tasks for this session and log the fallback.
 
 #### 2c. Waiting on active delegated groups
 
-If Orientation selected an existing `[h]` group rather than a fresh task:
-
-- Wait on its workflow thread using `hcom events --wait` rather than `sleep`.
-- Accept `DONE:` or `APPROVED:` as completion signals.
-- Surface `BLOCKED:` as a blocker — write a handoff note, and if needed mark the first unresolved task in the group `[!]` before stopping.
+If Orientation selected an existing `[h]` group rather than a fresh task, wait on its workflow thread with `hcom events --wait`, accept `DONE:` or `APPROVED:` as completion signals, and treat `BLOCKED:` as a blocker. Write a handoff note, and mark the first unresolved task `[!]` if needed.
 
 ### 3. Verify
 
 #### 3a. Hub tasks
 
-Run the verify command specified on the task. If no verify command is specified, infer the smallest workspace-native automated command that proves the task, preferring a focused test or targeted validation over a broad manual check.
+Run the task's verify command. If none is specified, infer the smallest workspace-native automated command that proves the task, preferring a focused test or targeted validation over a broad manual check.
 
 - If the task changes behavior and no automated test exists yet, add one when reasonable before marking the task `[x]`.
 - **Pass** → proceed to step 4
@@ -313,10 +279,10 @@ Run the verify command specified on the task. If no verify command is specified,
 When a worker reports `DONE:` or `APPROVED:` for the selected group, the hub must verify the work itself.
 
 1. Run every delegated task's verify command in task order.
-2. If multiple tasks share one verify command and that command truly proves all of them, you may run it once.
-3. If verification **passes** for the whole group → proceed to step 4.
-4. If verification **fails** → send `FIX:` back to the same worker on the same thread with the concrete error details, keep the tasks `[h]`, and wait again. Maximum 3 hub verify rounds.
-5. If the worker reports `BLOCKED:` instead of completion, or the hub verify loop still fails after 3 rounds, mark the first unresolved task in the group `[!]`, revert later unresolved tasks in the group to `[ ]` if they never truly started, append to the Decisions log, write a handoff note, and stop.
+2. If multiple tasks share one verify command and it truly proves all of them, you may run it once.
+3. If verification **passes** for the whole group, proceed to step 4.
+4. If verification **fails**, send `FIX:` back to the same worker on the same thread with the concrete error details, keep the tasks `[h]`, and wait again. Maximum 3 hub verify rounds.
+5. If the worker reports `BLOCKED:`, or the hub verify loop still fails after 3 rounds, mark the first unresolved task `[!]`, revert later unresolved tasks to `[ ]` if they never truly started, append to the Decisions log, write a handoff note, and stop.
 
 ### 4. Mark done
 
@@ -335,18 +301,7 @@ If this was the **last remaining task** (all tasks in the plan are now `[x]`), a
 
 If a wiki exists, decide whether the completed task or delegated group produced durable findings worth preserving there.
 
-Good candidates include:
-
-- stable architecture facts verified during implementation
-- durable integration constraints or behavior
-- recurring debugging discoveries or operational gotchas
-- clarified domain rules or reusable comparisons
-
-Do not write back:
-
-- raw task progress notes
-- temporary dead ends
-- implementation minutiae unlikely to be reused
+Good candidates include stable architecture facts, durable integration constraints, recurring debugging discoveries, operational gotchas, clarified domain rules, or reusable comparisons. Do not write back raw progress notes, temporary dead ends, or one-off implementation minutiae.
 
 If the finding is durable:
 
@@ -363,7 +318,7 @@ Track any wiki paths updated this session so they can be mentioned in the handof
 
 ### 6. Log decisions
 
-If you made any non-obvious implementation decision during this task or delegated group (chose one approach over another, discovered a constraint, selected a worktree strategy, fell back from hcom, or found an inconsistency with the docs), append an entry to the Decisions log:
+If you made any non-obvious implementation decision during this task or delegated group, append an entry to the Decisions log:
 
 `YYYY-MM-DD — <decision and rationale>`
 
@@ -418,17 +373,17 @@ Do not commit during the execution loop. Committing is handled separately. Your 
 ## Important rules
 
 - **Never skip verification.** Every task or delegated group must pass hub-run verification before being marked `[x]`.
-- **The hub owns verification.** A worker saying `DONE:` or `APPROVED:` is a handoff signal, not completion by itself.
-- **Never work on a task whose dependencies are not `[x]`** — this includes `[>]` dependencies (they must be re-run and reach `[x]` first).
-- **Treat `[h]` as active external work.** Do not treat `[h]` like local `[~]`, and do not mark it `[x]` until the hub has verified the output.
-- **Never execute tasks outside the target set** — if a filter was given, respect it.
-- **Never make destructive git operations** (force push, hard reset, rebase) without explicit user instruction.
-- **If the plan is wrong** — missing tasks, wrong dependencies, incorrect scope — add or fix tasks in the plan file and log the change as a Decisions entry. Do not just work around it silently.
-- **If a wiki exists** — you may update it only with durable, reusable findings. Current repo state wins if the wiki is stale or wrong.
-- **YAML front matter is the only authoritative plan metadata.** Do not duplicate it elsewhere in the body. When editing a legacy plan, remove any `updated_at` field and the entire `## Plan summary` section.
-- **Keep YAML front matter and `plans/INDEX.md` synchronized** on every plan edit. If task count changes, update `task_count` and the index `Tasks` column. If `plans/INDEX.md` still uses legacy timestamp columns, rewrite it to the slim schema before updating rows.
-- **Keep tasks atomic.** If a task is growing beyond ~20 files, split it into subtasks, add them to the plan, and log the split.
-- **Prefer independently re-runnable evidence.** When behavior changes, bias toward tests or validations others can run later instead of relying only on one-off local checks.
-- **Never use `sleep` for hcom flows.** Use `hcom events --wait` or equivalent thread-aware waiting instead.
+- **The hub owns verification.** `DONE:` and `APPROVED:` are handoff signals, not completion.
+- **Never work on a task whose dependencies are not `[x]`.** That includes `[>]` dependencies that still need re-running.
+- **Treat `[h]` as active external work.** Do not treat it like local `[~]`, and do not mark it `[x]` before hub verification.
+- **Respect the target set.** If a filter was given, do not execute tasks outside it.
+- **Never make destructive git operations** without explicit user instruction.
+- **If the plan is wrong, fix the plan.** Add or correct tasks, dependencies, or scope and log the change instead of silently working around it.
+- **If a wiki exists, write back only durable, reusable findings.** Current repo state wins if the wiki is stale.
+- **YAML front matter is the only authoritative plan metadata.** Remove any legacy `updated_at` field or `## Plan summary` section when you edit the plan.
+- **Keep YAML front matter and `plans/INDEX.md` synchronized** on every plan edit. If task count changes, update `task_count` and the index `Tasks` column.
+- **Keep tasks atomic.** If a task grows beyond about 20 files, split it and log the split.
+- **Prefer independently re-runnable evidence.** Favor tests or validations others can re-run later.
+- **Never use `sleep` for hcom flows.** Use `hcom events --wait` or equivalent thread-aware waiting.
 - **Never hardcode launched agent names.** Parse the `Names:` line from launch output and prefer stable tags for routing.
 - **Today's date for log entries:** use the actual current date from the system.

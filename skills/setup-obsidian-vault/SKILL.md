@@ -4,6 +4,9 @@ description: Scaffold a new Obsidian vault with pre-configured settings, keymaps
 argument-hint: <target-vault-path>
 disable-model-invocation: true
 allowed-tools: Bash
+metadata:
+  version: "1.0.0"
+  author: scchearn
 ---
 
 The skill file is at `$SKILL_PATH`. Derive the script path from it:

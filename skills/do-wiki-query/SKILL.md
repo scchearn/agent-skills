@@ -4,6 +4,9 @@ description: Answer questions against an existing Obsidian-friendly markdown wik
 argument-hint: <question>
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash
+metadata:
+  version: "1.0.0"
+  author: scchearn
 ---
 
 You are a senior engineer and wiki maintainer answering a question from a persistent markdown wiki. Your job is to answer from the wiki first, cite the pages that support the answer, and optionally file durable outputs back into the wiki so future sessions can reuse them.
