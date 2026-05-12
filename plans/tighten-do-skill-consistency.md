@@ -144,6 +144,7 @@ The do-* skill family has consistent front matter, no internal rule contradictio
 2026-05-12 — Initial plan created for: tighten do-* skill consistency, add /do-commit and /do-abandon, extract shared wiki and qmd references. Sourced from `plans/research/do-skills-review-gaps-improvements.md` finding IDs F1, F2, F4, F5, F9, F11, F15, F16, F17, F18. Lower-priority findings (F3, F6, F7, F8, F10, F12, F13, F14) deferred to a follow-up polish plan.
 2026-05-12 — T1 direction confirmed: keep `disable-model-invocation: true` on `do-wiki-query` and rewrite the description to user-invoked phrasing (matches the rest of the family).
 2026-05-12 — T6 scope softened: add `## Shared references` pointer blocks to each affected SKILL.md rather than ripping out inline boilerplate. Bulk content surgery across 12 files is high-risk and out-of-scope for this plan; canonical source now exists under `skills/_shared/` so future polish passes can prune duplication safely. Verify command updated accordingly.
+2026-05-12 — /do-commit produced 2 commits in `--bundle` mode at user direction: (1) `86f4dd2` plan-management commit (plan + INDEX + audit memo); (2) `305d1ae` bundle commit covering T1-T11. `.claude/settings.local.json` was included in the bundle per user choice; `plans/research/gsd-vs-superpowers-integration.md` left untracked as out-of-scope of this plan.
 
 ---
 
@@ -154,4 +155,5 @@ The do-* skill family has consistent front matter, no internal rule contradictio
 **Next task:** none — plan done
 **Open questions / blockers:** none
 **Completion:** 11 of 11 (100%)
-**Next step:** `/do-commit plans/tighten-do-skill-consistency.md` to land the work as one commit per task (or `--bundle` for a single combined commit).
+**Commits:** 2 — `86f4dd2` (plan + INDEX + audit memo) and `305d1ae` (bundle T1-T11). Bundle mode chosen by user.
+**Next step:** branch `align-with-superpowers` is ahead of `main` by 4 commits — push and consider `superpowers:finishing-a-development-branch` to open a PR.
