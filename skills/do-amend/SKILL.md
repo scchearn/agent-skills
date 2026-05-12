@@ -18,6 +18,14 @@ If superpowers skills are installed, treat them as recommended (not required) co
 
 These skills are referenced for style and discipline. This skill works without them.
 
+## Shared references
+
+Canonical sources for cross-cutting rules. When they conflict with inline text below, the shared docs win:
+
+- `../_shared/wiki-context.md` — how to read an existing wiki without treating it as authority.
+- `../_shared/qmd-readiness.md` — qmd readiness check and Grep/Glob fallback.
+- `../_shared/wiki-write-back.md` — when and how to file durable findings back into the wiki.
+
 ## Hard gates
 
 - **No file edits before Phase 4 confirmation.** Phases 1–3 are read and reason only. Even small "obvious" fixes wait for the user's explicit yes.
@@ -198,7 +206,7 @@ For each `[ ]`/`[~]` task in the confirmed proposal:
 - Update Depends on if dependency order changed
 - If the amendment changes behavior, update the task so it includes automated tests or validations when reasonable
 
-Do NOT change the task ID. If the change makes the task fundamentally different, supersede it: mark the old one `[!]` with a note, and add a new task.
+Do NOT change the task ID. If the change makes the task fundamentally different, supersede it: mark the old one `[!]` with a note, and add a new task. When you supersede, also note the replacement task ID in the `[!]` task's Notes (e.g. "Superseded by T<new>") so step E can rewrite downstream dependencies cleanly.
 
 ### D. Add new tasks
 
@@ -217,6 +225,8 @@ Append new tasks after the last existing task, continuing the ID sequence (last 
 ### E. Update downstream dependencies
 
 If new tasks become prerequisites for existing pending tasks, update their `Depends on` fields.
+
+**Rewrite dependencies on superseded `[!]` tasks.** If step C marked any task `[!]` and added a replacement, walk every other task in the plan and rewrite its `Depends on:` line so that every reference to the superseded ID becomes a reference to the replacement ID. Do this for `[ ]`, `[~]`, `[>]`, and even already-`[x]` tasks (the historical dependency is no longer accurate — but do not change their status). A `[!]` task with downstream dependents that has no replacement is a planning error; surface it in the report rather than silently leaving dangling references.
 
 ### F. Append to decisions log
 

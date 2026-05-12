@@ -19,6 +19,16 @@
       "description": "Amend an in-flight plan after requirements or scope change, and optionally preserve durable amendment findings in an existing wiki"
     },
     {
+      "name": "do-commit",
+      "path": "skills/do-commit/SKILL.md",
+      "description": "Turn completed plan tasks into clean git commits — one scoped commit per task by default, optionally bundled with --bundle. Stages only relevant files, references task IDs in the message, and updates the plan handoff note"
+    },
+    {
+      "name": "do-abandon",
+      "path": "skills/do-abandon/SKILL.md",
+      "description": "Stop an in-flight plan permanently with proposal-first confirmation — flips front-matter status to abandoned, marks in-progress tasks [!], appends a decisions-log entry, and moves the row in plans/INDEX.md. Plan file and [x] tasks are preserved as an audit record"
+    },
+    {
       "name": "do-plan",
       "path": "skills/do-plan/SKILL.md",
       "description": "Create a dependency-ordered implementation plan using current repo context, relevant research, and optional wiki context",
@@ -77,7 +87,7 @@
     {
       "name": "do-wiki-query",
       "path": "skills/do-wiki-query/SKILL.md",
-      "description": "Answer questions against an existing Obsidian-friendly markdown wiki. Use this whenever the user is asking what is happening in the project, directory, codebase, architecture, workflow, decisions, or current state and the wiki likely contains the answer, even if they do not explicitly mention the wiki. Also use it for summaries, comparisons, and reusable analyses grounded in current wiki pages. Not for surfacing unresolved gaps; use /do-wiki-review for that."
+      "description": "Answer questions against an existing Obsidian-friendly markdown wiki. User-invoked only via /do-wiki-query or an explicit ask to query the wiki — do not auto-route arbitrary project questions here. Also covers summaries, comparisons, and reusable analyses grounded in current wiki pages. Not for surfacing unresolved gaps; use /do-wiki-review for that."
     },
     {
       "name": "setup-obsidian-vault",

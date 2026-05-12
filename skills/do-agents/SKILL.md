@@ -10,6 +10,16 @@ metadata:
 
 # do-agents
 
+## Schema notes
+
+This skill intentionally diverges from the rest of the `do-*` family front-matter schema:
+
+- No `disable-model-invocation: true` — agent-team planning is appropriate to surface when the user describes a multi-agent workflow, not only when they type `/do-agents` verbatim.
+- Adds `compatibility:` — declares the hcom + OpenCode assumptions baked into this skill, so harnesses can decide whether the skill is loadable in their environment.
+- Adds nested `metadata.phase / metadata.system / metadata.outputs` — records the hcom-specific lifecycle (`planning` phase, `hcom` target system, `agents-slug-artifacts-or-loader` outputs) that the rest of the family does not need.
+
+If you are aligning this skill with the rest of `do-*` later, preserve `compatibility` and `metadata.*` — they encode hcom integration constraints, not stylistic boilerplate.
+
 ## Companion superpowers skills
 
 If superpowers skills are installed, treat them as recommended (not required) companions:
@@ -19,6 +29,14 @@ If superpowers skills are installed, treat them as recommended (not required) co
 - `superpowers:dispatching-parallel-agents` — general parallel-execution doctrine that aligns with hcom topologies (worker-reviewer, planner-executor-reviewer, hub-spoke).
 
 These skills are referenced for style and discipline. This skill works without them.
+
+## Shared references
+
+Canonical sources for cross-cutting rules. When they conflict with inline text below, the shared docs win:
+
+- `../_shared/wiki-context.md` — how to read an existing wiki without treating it as authority.
+- `../_shared/qmd-readiness.md` — qmd readiness check and Grep/Glob fallback.
+- `../_shared/wiki-write-back.md` — when and how to file durable findings back into the wiki.
 
 ## Overview
 

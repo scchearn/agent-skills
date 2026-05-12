@@ -335,6 +335,8 @@ The wiki workflow assumes these defaults unless the workspace already has a stro
 | [do-agents](./skills/do-agents/) | You want an hcom agent-team design, or want to load or reuse an existing saved config before execution | Either new-team `agents/<slug>.toml` and `agents/<slug>.md` artifacts, or loader instructions for a saved config, with roles, routing, intent, and launch guidance |
 | [do-start](./skills/do-start/) | You want the agent to execute the next unblocked task from a plan | Autonomous task execution with verification, plan updates, and optional durable wiki write-back |
 | [do-amend](./skills/do-amend/) | A plan already exists, but requirements or scope changed | An impact analysis, then a safe update to the plan after approval, with optional durable wiki updates when warranted |
+| [do-commit](./skills/do-commit/) | Completed tasks need to land as clean git commits (one per task by default, optionally bundled) | One scoped commit per completed task — stages only relevant files, references task IDs in the message, skips already-committed tasks |
+| [do-abandon](./skills/do-abandon/) | A plan should be stopped permanently rather than amended | Proposal-first abandonment: flips front-matter status to `abandoned`, marks any in-progress task `[!]`, appends a decisions-log entry, and moves the row in `plans/INDEX.md` — plan file and `[x]` tasks are preserved as an audit record |
 | [do-wiki-build](./skills/do-wiki-build/) | You want a persistent markdown wiki scaffold for a topic, corpus, or research area | An Obsidian-friendly wiki scaffold with raw-source, schema, map-of-content, and log conventions; source-derived notes are added later via `/do-wiki-add` |
 | [do-wiki-align](./skills/do-wiki-align/) | You already have a wiki-like notes corpus and want it normalized to the repo conventions | A proposal-first retrofit pass that aligns structure, naming, hub notes, links, and relevant AGENTS/CLAUDE files to the Obsidian-friendly note graph model |
 | [do-wiki-add](./skills/do-wiki-add/) | You already have a wiki and want to add a local source or intentionally save a conversation as a source note | Updated source, topic, entity, and concept notes (from a local file or conversation-sourced note) plus backlink-aware graph expansion, refreshed `index.md`, and a log entry |
@@ -352,6 +354,20 @@ The wiki workflow assumes these defaults unless the workspace already has a stro
 2. Run `/do-plan <task description>` to create a plan. It will reuse relevant notes from `plans/research/` when they exist.
 3. Run `/do-start plans/<slug>.md` to execute the plan in order.
 4. Run `/do-amend plans/<slug>.md` if new requirements appear or completed work needs to be revisited.
+5. Run `/do-commit plans/<slug>.md` to turn completed tasks into clean git commits (one per task by default; pass `--bundle` for a single combined commit).
+6. Run `/do-abandon plans/<slug>.md` if the plan should be stopped permanently instead of finished or amended.
+
+### Plan task status legend
+
+Tasks inside `plans/<slug>.md` use a five-state checkbox vocabulary that `/do-start`, `/do-amend`, `/do-commit`, and `/do-abandon` all read and write:
+
+| Symbol | Meaning |
+| ------ | ------- |
+| `[ ]`  | Pending — not started yet. Eligible for `/do-start` once dependencies are `[x]`. |
+| `[~]`  | In-progress — `/do-start` is actively working on this task. Should never persist across sessions. |
+| `[x]`  | Done — verify passed. Downstream tasks may now run. |
+| `[!]`  | Blocked or superseded — verify failed after structured debugging, or `/do-amend` replaced the task. Requires human attention. |
+| `[>]`  | Needs re-run — `/do-amend` invalidated a previously-`[x]` task. `/do-start` will surface and ask how to handle. |
 
 For knowledge-base workflows, a typical flow is:
 
@@ -374,7 +390,7 @@ In `--guidance-only` mode, the wiki is read-only context only. The skill should 
 
 You do not need to use every skill every time. If the work is already well understood, it is fine to start with `/do-plan`.
 
-If `plans/research/` or a wiki already exists, `/do-research`, `/do-plan`, `/do-start`, and `/do-amend` can reuse that state. They should only write back into the wiki when the finding is durable enough to help future sessions.
+If `plans/research/` or a wiki already exists, `/do-research`, `/do-plan`, `/do-start`, `/do-amend`, `/do-commit`, and `/do-abandon` can reuse that state. They should only write back into the wiki when the finding is durable enough to help future sessions.
 
 ## Common Examples
 
@@ -387,6 +403,9 @@ If `plans/research/` or a wiki already exists, `/do-research`, `/do-plan`, `/do-
 /do-start plans/admin-orders-csv-export.md T3
 /do-start plans/admin-orders-csv-export.md T3,T5
 /do-start plans/admin-orders-csv-export.md T3-T5
+/do-commit plans/admin-orders-csv-export.md
+/do-commit plans/admin-orders-csv-export.md --bundle
+/do-abandon plans/admin-orders-csv-export.md
 
 /do-wiki-build build a competitor intelligence wiki
 /do-wiki-add raw/competitors/acme-launch-post.md
@@ -407,6 +426,13 @@ For `/do-amend`, describe the change first, then invoke the skill against the ex
 ```text
 We now need the CSV export to include refunded orders too.
 /do-amend plans/admin-orders-csv-export.md
+```
+
+For `/do-abandon`, describe the reason first — the skill reads your prompt as context, then proposes the abandonment for explicit confirmation before applying:
+
+```text
+We're shelving CSV export — the customer asked for Parquet instead, and the work to date is throwaway.
+/do-abandon plans/admin-orders-csv-export.md
 ```
 
 ## What These Skills Create

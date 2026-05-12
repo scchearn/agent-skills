@@ -20,6 +20,14 @@ If superpowers skills are installed, treat them as recommended (not required) co
 
 These skills are referenced for style and discipline. This skill works without them.
 
+## Shared references
+
+Canonical sources for cross-cutting rules. When they conflict with inline text below, the shared docs win:
+
+- `../_shared/wiki-context.md` — how to read an existing wiki without treating it as authority.
+- `../_shared/qmd-readiness.md` — qmd readiness check and Grep/Glob fallback.
+- `../_shared/wiki-write-back.md` — when and how to file durable findings back into the wiki.
+
 ## Hard gates
 
 - **Never mark `[x]` without verification.** Every task must pass its verify command (or the smallest workspace-native equivalent you can infer) before its checkbox flips. This is non-negotiable, even if the change "obviously works".
@@ -35,7 +43,7 @@ These skills are referenced for style and discipline. This skill works without t
 | "I'll mark it `[x]` and re-check later" | Once it's `[x]`, downstream work assumes it's correct. Verify first, mark second. |
 | "The dependency is basically done, I'll skip ahead" | Basically-done is `[ ]`. Respect the dependency graph. |
 | "This task is too big, I'll just power through" | Atomic means ~20 files max. If it's bigger, split it in the plan, log the split, then continue. |
-| "The verify failed twice, third time's the charm" | After 3 attempts, mark `[!]`, write a handoff, stop. Don't grind through a real blocker. |
+| "The verify failed twice, third time's the charm" | 3 surface retries is the trigger to *escalate*, not to give up. Switch to hypothesis-driven debugging (`superpowers:systematic-debugging`) — reproduce, minimize, instrument, fix. If still unresolved after that, mark `[!]`, write a handoff, stop. |
 
 ---
 
@@ -223,8 +231,9 @@ Run the verify command specified on the task. If no verify command is specified,
 
 - If the task changes behavior and no automated test exists yet, add one when reasonable before marking the task `[x]`.
 - **Pass** → proceed to step 4
-- **Fail** → read the error, fix it, re-run. Maximum 3 attempts.
-- **Still failing after 3 attempts** → mark the task `[!]`, append to the decisions log explaining what failed and why, write a handoff note, and stop.
+- **Fail** → read the error, fix it, re-run. Up to 3 surface-level retries (read-error, obvious-fix, re-run).
+- **Still failing after 3 surface retries** → escalate to hypothesis-driven debugging per `superpowers:systematic-debugging`: reproduce, minimize, form a hypothesis, instrument, then attempt a targeted fix. Log each hypothesis tried in the decisions log.
+- **Still failing after structured debugging** → mark the task `[!]`, append to the decisions log explaining what failed and the hypotheses ruled out, write a handoff note, and stop. Do not loop indefinitely.
 
 ### 4. Mark done
 
@@ -286,7 +295,7 @@ Stop and write a handoff note when any of these conditions are met:
 
 - Target set queue is exhausted — completion or partial-run note
 - A task is `[!]` with no fix — blocker note
-- You have completed 25 tasks in this session — handoff note summarising what was done and what is next
+- You have completed 25 tasks in this session — write a handoff note and pause by default. If the user has explicitly asked you to run longer in this session, you may continue past 25 with a brief decisions-log entry noting the override; otherwise treat 25 as the stop point.
 
 ---
 

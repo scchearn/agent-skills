@@ -18,6 +18,14 @@ If superpowers skills are installed, treat them as recommended (not required) co
 
 These skills are referenced for style and discipline. This skill works without them.
 
+## Shared references
+
+Canonical sources for cross-cutting rules. When they conflict with inline text below, the shared docs win:
+
+- `../_shared/wiki-context.md` — how to read an existing wiki without treating it as authority.
+- `../_shared/qmd-readiness.md` — qmd readiness check and Grep/Glob fallback.
+- `../_shared/wiki-write-back.md` — when and how to file durable findings back into the wiki.
+
 ## Red flags
 
 If you catch yourself thinking any of these while researching, stop:

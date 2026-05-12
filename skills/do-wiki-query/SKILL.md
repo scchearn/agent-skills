@@ -1,6 +1,6 @@
 ---
 name: do-wiki-query
-description: Use when answering a question against an existing Obsidian-friendly wiki — applies whenever the user asks about project, codebase, architecture, workflow, decisions, or current state and the wiki likely contains the answer, even if they do not mention the wiki by name. Cites pages, optionally files durable analyses back into the wiki. Not for surfacing unresolved gaps — use /do-wiki-review.
+description: Use when the user explicitly invokes /do-wiki-query (or asks you to query the wiki) to answer a question against an existing Obsidian-friendly wiki. Cites pages, optionally files durable analyses back into the wiki. Not for surfacing unresolved gaps — use /do-wiki-review. User-invoked only; do not auto-route arbitrary questions here.
 argument-hint: <question>
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash
@@ -20,6 +20,14 @@ If superpowers skills are installed, treat them as recommended (not required) co
 - `superpowers:brainstorming` — when the question is fuzzy ("what should we do about X?"), shift into brainstorming first. This skill answers; it does not decide.
 
 These skills are referenced for style and discipline. This skill works without them.
+
+## Shared references
+
+Canonical sources for cross-cutting rules. When they conflict with inline text below, the shared docs win:
+
+- `../_shared/wiki-context.md` — how to read an existing wiki without treating it as authority.
+- `../_shared/qmd-readiness.md` — qmd readiness check and Grep/Glob fallback.
+- `../_shared/wiki-write-back.md` — when and how to file durable findings back into the wiki.
 
 ## Input
 
